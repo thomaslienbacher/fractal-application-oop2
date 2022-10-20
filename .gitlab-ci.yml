@@ -1,0 +1,20 @@
+stages:
+  - stats
+  - test
+
+stats:
+  stage: stats
+  script: stats
+  tags:
+    - OOP2
+  artifacts:
+    paths:
+      - stats.html
+test:
+  stage: test
+  script: test
+  tags:
+    - OOP2
+  artifacts:
+    paths:
+      - review.md
