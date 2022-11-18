@@ -19,13 +19,88 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import lombok.Getter;
 
+import java.util.List;
+import java.util.Objects;
+
 
 public class FractalApplication extends Application {
 
+    enum ColorModes {
+        BLACK_WHITE,
+        COLOUR_FADE
+    }
     private GridPane mainPane;
     private Canvas rightCanvas;
     private Canvas leftCanvas;
     private GridPane controlPane;
+    
+    private int iterations = 128;
+    private float power = (float)2.0;
+    private float mandelbrotX = (float)0.0;
+    private float mandelbrotY = (float)0.0;
+    private float mandelbrotZoom = (float)0.0;
+    private float juliaX = (float)0.0;
+    private float juliaY = (float)0.0;
+    private float juliaZoom = (float)0.0;
+    private ColorModes colourMode = ColorModes.BLACK_WHITE;
+
+
+    public void setIterations(int newValue) {
+        this.iterations = newValue;
+    }
+    public void setPower(float newValue) {
+        this.power = newValue;
+    }
+    public void setMandelbrotX(float newValue) {
+        this.mandelbrotX = newValue;
+    }
+    public void setMandelbrotY(float newValue) {
+        this.mandelbrotY = newValue;
+    }
+    public void setMandelbrotZoom(float newValue) {
+        this.mandelbrotZoom = newValue;
+    }
+    public void setJuliaX(float newValue) {
+        this.juliaX = newValue;
+    }
+    public void setJuliaY(float newValue) {
+        this.juliaY = newValue;
+    }
+    public void setJuliaZoom(float newValue) {
+        this.juliaZoom = newValue;
+    }
+    public void setColourMode(ColorModes newValue) {
+        this.colourMode = newValue;
+    }
+
+    public int getIterations() {
+        return iterations;
+    }
+    public float getPower() {
+        return power;
+    }
+    public float getMandelbrotX() {
+        return mandelbrotX;
+    }
+    public float getMandelbrotY() {
+        return mandelbrotY;
+    }
+    public float getMandelbrotZoom() {
+        return mandelbrotZoom;
+    }
+
+    public float getJuliaX() {
+        return juliaX;
+    }
+    public float getJuliaY() {
+        return juliaY;
+    }
+    public float getJuliaZoom() {
+        return juliaZoom;
+    }
+    public ColorModes getColourMode() {
+        return colourMode;
+    }
 
 
     @Getter
@@ -126,6 +201,47 @@ public class FractalApplication extends Application {
         Platform.runLater(() -> {
             updateSizes();
             FractalLogger.logInitializedGUI(mainPane, primaryStage, leftCanvas, rightCanvas);
+
         });
+        Parameters params = getParameters();
+        List<String> param_list = params.getRaw();
+        for (String param: param_list) {
+            switch (param.split("=")[0].toLowerCase()){
+                case "--iterations":
+                    setIterations(Integer.parseInt(param.split("=")[1]));
+                    break;
+                case "--power":
+                    setPower(Float.parseFloat(param.split("=")[1]));
+                    break;
+                case "--mandelbrotx":
+                    setMandelbrotX(Float.parseFloat(param.split("=")[1]));
+                    break;
+                case "--mandelbroty":
+                    setMandelbrotY(Float.parseFloat(param.split("=")[1]));
+                    break;
+                case "--mandelbrotzoom":
+                    setMandelbrotZoom(Float.parseFloat(param.split("=")[1]));
+                    break;
+                case "--juliax":
+                    setJuliaX(Float.parseFloat(param.split("=")[1]));
+                    break;
+                case "--juliay":
+                    setJuliaY(Float.parseFloat(param.split("=")[1]));
+                    break;
+                case "--juliazoom":
+                    setJuliaZoom(Float.parseFloat(param.split("=")[1]));
+                    break;
+                case "--colourmode":
+                    if (Objects.equals(param.split("=")[1], ColorModes.BLACK_WHITE.name())){
+                        setColourMode(ColorModes.BLACK_WHITE);
+                    }
+                    else if (Objects.equals(param.split("=")[1], ColorModes.COLOUR_FADE.name())) {
+                        setColourMode(ColorModes.COLOUR_FADE);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 }
