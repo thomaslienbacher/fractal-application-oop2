@@ -1,10 +1,12 @@
 package at.tugraz.oop2.gui;
 
 import at.tugraz.oop2.shared.FractalLogger;
+import at.tugraz.oop2.shared.SimpleImage;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.concurrent.Task;
 import javafx.geometry.Bounds;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
@@ -243,5 +245,20 @@ public class FractalApplication extends Application {
                     break;
             }
         }
+    }
+
+    private SimpleImage GetJuliaImage()
+    {
+        SimpleImage ret = new SimpleImage(rightWidth.intValue(), rightHeight.intValue());
+
+        for(int x = 0;x < rightWidth.intValue();x++)
+        {
+            for(int y = 0;y < rightHeight.intValue();y++)
+            {
+                //ret.setPixel(x, y, GetJuliaPixel(x, y));
+            }
+        }
+
+        return ret;
     }
 }
