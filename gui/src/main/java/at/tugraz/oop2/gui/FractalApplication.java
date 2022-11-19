@@ -37,14 +37,23 @@ public class FractalApplication extends Application {
     private Canvas leftCanvas;
     private GridPane controlPane;
 
+    @Getter
     private int iterations = 128;
-    private double power = 2.0;
-    private double mandelbrotX = 0.0;
-    private double mandelbrotY = 0.0;
-    private double mandelbrotZoom = 0.0;
-    private double juliaX = 0.0;
-    private double juliaY = 0.0;
-    private double juliaZoom = 0.0;
+    @Getter
+    private DoubleProperty power = new SimpleDoubleProperty(2.0);
+    @Getter
+    private DoubleProperty mandelbrotX = new SimpleDoubleProperty(0.0);
+    @Getter
+    private DoubleProperty mandelbrotY = new SimpleDoubleProperty(0.0);
+    @Getter
+    private DoubleProperty mandelbrotZoom = new SimpleDoubleProperty(0.0);
+    @Getter
+    private DoubleProperty juliaX = new SimpleDoubleProperty(0.0);
+    @Getter
+    private DoubleProperty juliaY = new SimpleDoubleProperty(0.0);
+    @Getter
+    private DoubleProperty juliaZoom = new SimpleDoubleProperty(0.0);
+    @Getter
     private ColorModes colourMode = ColorModes.BLACK_WHITE;
 
 
@@ -53,71 +62,35 @@ public class FractalApplication extends Application {
     }
 
     public void setPower(double newValue) {
-        this.power = newValue;
+        this.power.setValue(newValue);
     }
 
     public void setMandelbrotX(double newValue) {
-        this.mandelbrotX = newValue;
+        this.mandelbrotX.setValue(newValue);
     }
 
     public void setMandelbrotY(double newValue) {
-        this.mandelbrotY = newValue;
+        this.mandelbrotY.setValue(newValue);
     }
 
     public void setMandelbrotZoom(double newValue) {
-        this.mandelbrotZoom = newValue;
+        this.mandelbrotZoom.setValue(newValue);
     }
 
     public void setJuliaX(double newValue) {
-        this.juliaX = newValue;
+        this.juliaX.setValue(newValue);
     }
 
     public void setJuliaY(double newValue) {
-        this.juliaY = newValue;
+        this.juliaY.setValue(newValue);
     }
 
     public void setJuliaZoom(double newValue) {
-        this.juliaZoom = newValue;
+        this.juliaZoom.setValue(newValue);
     }
 
     public void setColourMode(ColorModes newValue) {
         this.colourMode = newValue;
-    }
-
-    public int getIterations() {
-        return iterations;
-    }
-
-    public double getPower() {
-        return power;
-    }
-
-    public double getMandelbrotX() {
-        return mandelbrotX;
-    }
-
-    public double getMandelbrotY() {
-        return mandelbrotY;
-    }
-
-    public double getMandelbrotZoom() {
-        return mandelbrotZoom;
-    }
-
-    public double getJuliaX() {
-        return juliaX;
-    }
-
-    public double getJuliaY() {
-        return juliaY;
-    }
-
-    public double getJuliaZoom() {
-        return juliaZoom;
-    }
-
-    public ColorModes getColourMode() {
-        return colourMode;
     }
 
 
@@ -262,14 +235,11 @@ public class FractalApplication extends Application {
         }
     }
 
-    private SimpleImage GetJuliaImage()
-    {
+    private SimpleImage GetJuliaImage() {
         SimpleImage ret = new SimpleImage(rightWidth.intValue(), rightHeight.intValue());
 
-        for(int x = 0;x < rightWidth.intValue();x++)
-        {
-            for(int y = 0;y < rightHeight.intValue();y++)
-            {
+        for (int x = 0; x < rightWidth.intValue(); x++) {
+            for (int y = 0; y < rightHeight.intValue(); y++) {
                 //ret.setPixel(x, y, GetJuliaPixel(x, y));
             }
         }
