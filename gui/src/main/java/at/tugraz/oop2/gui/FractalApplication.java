@@ -1,11 +1,11 @@
 package at.tugraz.oop2.gui;
 
+import at.tugraz.oop2.shared.ColourModes;
 import at.tugraz.oop2.shared.FractalLogger;
 import at.tugraz.oop2.shared.SimpleImage;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.*;
 import javafx.concurrent.Task;
 import javafx.geometry.Bounds;
 import javafx.geometry.HPos;
@@ -27,18 +27,13 @@ import java.util.Objects;
 
 public class FractalApplication extends Application {
 
-    enum ColorModes {
-        BLACK_WHITE,
-        COLOUR_FADE
-    }
-
     private GridPane mainPane;
     private Canvas rightCanvas;
     private Canvas leftCanvas;
     private GridPane controlPane;
 
     @Getter
-    private int iterations = 128;
+    private IntegerProperty iterations = new SimpleIntegerProperty(128);
     @Getter
     private DoubleProperty power = new SimpleDoubleProperty(2.0);
     @Getter
@@ -54,45 +49,7 @@ public class FractalApplication extends Application {
     @Getter
     private DoubleProperty juliaZoom = new SimpleDoubleProperty(0.0);
     @Getter
-    private ColorModes colourMode = ColorModes.BLACK_WHITE;
-
-
-    public void setIterations(int newValue) {
-        this.iterations = newValue;
-    }
-
-    public void setPower(double newValue) {
-        this.power.setValue(newValue);
-    }
-
-    public void setMandelbrotX(double newValue) {
-        this.mandelbrotX.setValue(newValue);
-    }
-
-    public void setMandelbrotY(double newValue) {
-        this.mandelbrotY.setValue(newValue);
-    }
-
-    public void setMandelbrotZoom(double newValue) {
-        this.mandelbrotZoom.setValue(newValue);
-    }
-
-    public void setJuliaX(double newValue) {
-        this.juliaX.setValue(newValue);
-    }
-
-    public void setJuliaY(double newValue) {
-        this.juliaY.setValue(newValue);
-    }
-
-    public void setJuliaZoom(double newValue) {
-        this.juliaZoom.setValue(newValue);
-    }
-
-    public void setColourMode(ColorModes newValue) {
-        this.colourMode = newValue;
-    }
-
+    private Property<ColourModes> colourMode = new SimpleObjectProperty<ColourModes>(ColourModes.BLACK_WHITE);
 
     @Getter
     private DoubleProperty leftHeight = new SimpleDoubleProperty();
@@ -118,10 +75,7 @@ public class FractalApplication extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-
-
         mainPane = new GridPane();
-
 
         leftCanvas = new Canvas();
         leftCanvas.setCursor(Cursor.HAND);
@@ -185,7 +139,6 @@ public class FractalApplication extends Application {
         primaryStage.setWidth(1080);
         primaryStage.setHeight(720);
 
-
         primaryStage.setScene(scene);
         primaryStage.show();
 
@@ -194,39 +147,47 @@ public class FractalApplication extends Application {
             FractalLogger.logInitializedGUI(mainPane, primaryStage, leftCanvas, rightCanvas);
 
         });
+
+        parseArguments();
+        FractalLogger.logInitializedGUI(mainPane, primaryStage, leftCanvas, rightCanvas);
+        FractalLogger.logArgumentsGUI(mandelbrotX, mandelbrotY, mandelbrotZoom, power,
+                iterations, juliaX, juliaY, juliaZoom, colourMode);
+    }
+
+    void parseArguments() {
         Parameters params = getParameters();
         List<String> param_list = params.getRaw();
         for (String param : param_list) {
             switch (param.split("=")[0].toLowerCase()) {
                 case "--iterations":
-                    setIterations(Integer.parseInt(param.split("=")[1]));
+                    iterations.set(Integer.parseInt(param.split("=")[1]));
                     break;
                 case "--power":
-                    setPower(Double.parseDouble(param.split("=")[1]));
+                    power.set(Double.parseDouble(param.split("=")[1]));
                     break;
                 case "--mandelbrotx":
-                    setMandelbrotX(Double.parseDouble(param.split("=")[1]));
+                    mandelbrotX.set(Double.parseDouble(param.split("=")[1]));
                     break;
                 case "--mandelbroty":
-                    setMandelbrotY(Double.parseDouble(param.split("=")[1]));
+                    mandelbrotY.set(Double.parseDouble(param.split("=")[1]));
                     break;
                 case "--mandelbrotzoom":
-                    setMandelbrotZoom(Double.parseDouble(param.split("=")[1]));
+                    mandelbrotZoom.set(Double.parseDouble(param.split("=")[1]));
                     break;
                 case "--juliax":
-                    setJuliaX(Double.parseDouble(param.split("=")[1]));
+                    juliaX.set(Double.parseDouble(param.split("=")[1]));
                     break;
                 case "--juliay":
-                    setJuliaY(Double.parseDouble(param.split("=")[1]));
+                    juliaY.set(Double.parseDouble(param.split("=")[1]));
                     break;
                 case "--juliazoom":
-                    setJuliaZoom(Double.parseDouble(param.split("=")[1]));
+                    juliaZoom.set(Double.parseDouble(param.split("=")[1]));
                     break;
                 case "--colourmode":
-                    if (Objects.equals(param.split("=")[1], ColorModes.BLACK_WHITE.name())) {
-                        setColourMode(ColorModes.BLACK_WHITE);
-                    } else if (Objects.equals(param.split("=")[1], ColorModes.COLOUR_FADE.name())) {
-                        setColourMode(ColorModes.COLOUR_FADE);
+                    if (Objects.equals(param.split("=")[1], ColourModes.BLACK_WHITE.name())) {
+                        colourMode.setValue(ColourModes.BLACK_WHITE);
+                    } else if (Objects.equals(param.split("=")[1], ColourModes.COLOUR_FADE.name())) {
+                        colourMode.setValue(ColourModes.COLOUR_FADE);
                     }
                     break;
                 default:
@@ -235,7 +196,7 @@ public class FractalApplication extends Application {
         }
     }
 
-    private SimpleImage GetJuliaImage() {
+    private SimpleImage getJuliaImage() {
         SimpleImage ret = new SimpleImage(rightWidth.intValue(), rightHeight.intValue());
 
         for (int x = 0; x < rightWidth.intValue(); x++) {
