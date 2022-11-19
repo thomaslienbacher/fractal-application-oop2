@@ -31,46 +31,55 @@ public class FractalApplication extends Application {
         BLACK_WHITE,
         COLOUR_FADE
     }
+
     private GridPane mainPane;
     private Canvas rightCanvas;
     private Canvas leftCanvas;
     private GridPane controlPane;
-    
+
     private int iterations = 128;
-    private float power = (float)2.0;
-    private float mandelbrotX = (float)0.0;
-    private float mandelbrotY = (float)0.0;
-    private float mandelbrotZoom = (float)0.0;
-    private float juliaX = (float)0.0;
-    private float juliaY = (float)0.0;
-    private float juliaZoom = (float)0.0;
+    private double power = 2.0;
+    private double mandelbrotX = 0.0;
+    private double mandelbrotY = 0.0;
+    private double mandelbrotZoom = 0.0;
+    private double juliaX = 0.0;
+    private double juliaY = 0.0;
+    private double juliaZoom = 0.0;
     private ColorModes colourMode = ColorModes.BLACK_WHITE;
 
 
     public void setIterations(int newValue) {
         this.iterations = newValue;
     }
-    public void setPower(float newValue) {
+
+    public void setPower(double newValue) {
         this.power = newValue;
     }
-    public void setMandelbrotX(float newValue) {
+
+    public void setMandelbrotX(double newValue) {
         this.mandelbrotX = newValue;
     }
-    public void setMandelbrotY(float newValue) {
+
+    public void setMandelbrotY(double newValue) {
         this.mandelbrotY = newValue;
     }
-    public void setMandelbrotZoom(float newValue) {
+
+    public void setMandelbrotZoom(double newValue) {
         this.mandelbrotZoom = newValue;
     }
-    public void setJuliaX(float newValue) {
+
+    public void setJuliaX(double newValue) {
         this.juliaX = newValue;
     }
-    public void setJuliaY(float newValue) {
+
+    public void setJuliaY(double newValue) {
         this.juliaY = newValue;
     }
-    public void setJuliaZoom(float newValue) {
+
+    public void setJuliaZoom(double newValue) {
         this.juliaZoom = newValue;
     }
+
     public void setColourMode(ColorModes newValue) {
         this.colourMode = newValue;
     }
@@ -78,28 +87,35 @@ public class FractalApplication extends Application {
     public int getIterations() {
         return iterations;
     }
-    public float getPower() {
+
+    public double getPower() {
         return power;
     }
-    public float getMandelbrotX() {
+
+    public double getMandelbrotX() {
         return mandelbrotX;
     }
-    public float getMandelbrotY() {
+
+    public double getMandelbrotY() {
         return mandelbrotY;
     }
-    public float getMandelbrotZoom() {
+
+    public double getMandelbrotZoom() {
         return mandelbrotZoom;
     }
 
-    public float getJuliaX() {
+    public double getJuliaX() {
         return juliaX;
     }
-    public float getJuliaY() {
+
+    public double getJuliaY() {
         return juliaY;
     }
-    public float getJuliaZoom() {
+
+    public double getJuliaZoom() {
         return juliaZoom;
     }
+
     public ColorModes getColourMode() {
         return colourMode;
     }
@@ -207,37 +223,36 @@ public class FractalApplication extends Application {
         });
         Parameters params = getParameters();
         List<String> param_list = params.getRaw();
-        for (String param: param_list) {
-            switch (param.split("=")[0].toLowerCase()){
+        for (String param : param_list) {
+            switch (param.split("=")[0].toLowerCase()) {
                 case "--iterations":
                     setIterations(Integer.parseInt(param.split("=")[1]));
                     break;
                 case "--power":
-                    setPower(Float.parseFloat(param.split("=")[1]));
+                    setPower(Double.parseDouble(param.split("=")[1]));
                     break;
                 case "--mandelbrotx":
-                    setMandelbrotX(Float.parseFloat(param.split("=")[1]));
+                    setMandelbrotX(Double.parseDouble(param.split("=")[1]));
                     break;
                 case "--mandelbroty":
-                    setMandelbrotY(Float.parseFloat(param.split("=")[1]));
+                    setMandelbrotY(Double.parseDouble(param.split("=")[1]));
                     break;
                 case "--mandelbrotzoom":
-                    setMandelbrotZoom(Float.parseFloat(param.split("=")[1]));
+                    setMandelbrotZoom(Double.parseDouble(param.split("=")[1]));
                     break;
                 case "--juliax":
-                    setJuliaX(Float.parseFloat(param.split("=")[1]));
+                    setJuliaX(Double.parseDouble(param.split("=")[1]));
                     break;
                 case "--juliay":
-                    setJuliaY(Float.parseFloat(param.split("=")[1]));
+                    setJuliaY(Double.parseDouble(param.split("=")[1]));
                     break;
                 case "--juliazoom":
-                    setJuliaZoom(Float.parseFloat(param.split("=")[1]));
+                    setJuliaZoom(Double.parseDouble(param.split("=")[1]));
                     break;
                 case "--colourmode":
-                    if (Objects.equals(param.split("=")[1], ColorModes.BLACK_WHITE.name())){
+                    if (Objects.equals(param.split("=")[1], ColorModes.BLACK_WHITE.name())) {
                         setColourMode(ColorModes.BLACK_WHITE);
-                    }
-                    else if (Objects.equals(param.split("=")[1], ColorModes.COLOUR_FADE.name())) {
+                    } else if (Objects.equals(param.split("=")[1], ColorModes.COLOUR_FADE.name())) {
                         setColourMode(ColorModes.COLOUR_FADE);
                     }
                     break;
