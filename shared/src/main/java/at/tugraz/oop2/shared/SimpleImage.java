@@ -1,6 +1,7 @@
 package at.tugraz.oop2.shared;
 
 import at.tugraz.oop2.shared.exception.InvalidDepthException;
+import javafx.scene.canvas.Canvas;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -74,5 +75,27 @@ public class SimpleImage implements Serializable {
             pixel[i] = this.data[width * y * depth + x * depth + i];
         }
         return pixel;
+    }
+
+    public void copyToCanvas(Canvas canvas) {
+        int cvWidth = ((int) canvas.getWidth());
+        int cvHeight = ((int) canvas.getHeight());
+
+        int minWidth = Math.min(width, cvWidth);
+        int minHeight = Math.min(height, cvHeight);
+
+        System.out.println("minw: " + minWidth + " minh: " + minHeight);
+
+        var writer = canvas.getGraphicsContext2D().getPixelWriter();
+        for (int x = 0; x < minWidth; x++) {
+            for (int y = 0; y < minHeight; y++) {
+                short[] pixel = this.getPixel(x, y);
+                int a = 0xff << 24;
+                int r = (pixel[0] & 0xff) << 16;
+                int g = (pixel[1] & 0xff) << 8;
+                int b = (pixel[2] & 0xff);
+                writer.setArgb(x, y, a | r | g | b);
+            }
+        }
     }
 }

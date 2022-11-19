@@ -16,4 +16,21 @@ public class MandelbrotRenderOptions extends FractalRenderOptions {
         this(centerX, centerY, width, height, zoom, power, iterations, mode, 0, 1, renderMode);
     }
 
+    @Override
+    public String toString() {
+        return "MandelbrotRenderOptions{" +
+                "centerX=" + centerX +
+                ", centerY=" + centerY +
+                ", width=" + width +
+                ", height=" + height +
+                ", zoom=" + zoom +
+                ", power=" + power +
+                ", iterations=" + iterations +
+                ", type=" + type +
+                ", mode=" + mode +
+                ", requestId=" + requestId +
+                ", totalFragments=" + totalFragments +
+                ", fragmentNumber=" + fragmentNumber +
+                '}';
+    }
 }
