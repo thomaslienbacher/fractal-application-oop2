@@ -22,6 +22,7 @@ public class JuliaRenderer implements Runnable {
     int tasksPerWorker;
     List<InetSocketAddress> connections;
     Canvas canvas;
+    private boolean exit = false;
 
     public JuliaRenderer(double power, int iterations, double x, double y, double zoom, ColourModes colourMode, RenderMode renderMode, int tasksPerWorker, List<InetSocketAddress> connections, Canvas canvas) {
         this.power = power;
@@ -39,10 +40,15 @@ public class JuliaRenderer implements Runnable {
     @Override
     public void run() {
         if (renderMode == RenderMode.LOCAL) {
-            RenderLocal();
+           RenderLocal();
         } else if (renderMode == RenderMode.DISTRIBUTED) {
             throw new RuntimeException("not implemented");
         }
+    }
+
+    public void stop()
+    {
+        exit = true;
     }
 
     //Renders local, blocks until finished
@@ -66,6 +72,9 @@ public class JuliaRenderer implements Runnable {
         }
 
         try {
+            if(exit)//Important breakpoint #1: before doing the work
+                return;
+
             var results = executor.invokeAll(tasks);
             var images = results.stream().map((a) -> {
                 try {
@@ -76,8 +85,13 @@ public class JuliaRenderer implements Runnable {
             }).toList();
 
             var completeImage = new SimpleImage(images);
+
+            if(exit)//Important breakpoint #2: before drawing on the canvas
+                return;
+
             completeImage.copyToCanvas(canvas);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -112,10 +126,11 @@ public class JuliaRenderer implements Runnable {
 
         private short[] getPixel(int x, int y) {
             //TODO Maths
-            //short s = (short) (y % 255);
-            //short t = (short) (x % 255);
-            //return new short[]{s, t, (short) Math.abs(s - t)};
-            return new short[]{0, 255, 255};
+            short r = (short) (y % 255);
+            short g = (short) (x % 255);
+            short b = (short) (x+y % 255);
+            return new short[]{r, g, b};
+            //return new short[]{0, 255, 255};
         }
 
         private int getHeightStart() {

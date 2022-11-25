@@ -26,6 +26,8 @@ import java.util.Objects;
 
 public class FractalApplication extends Application {
 
+    public static final boolean ON_DEMAND_RENDERING = true;
+
     private GridPane mainPane;
     private Canvas rightCanvas;
     private Canvas leftCanvas;
@@ -82,13 +84,14 @@ public class FractalApplication extends Application {
         leftCanvas.heightProperty().set(leftSize.getHeight());
 
         Bounds rightSize = mainPane.getCellBounds(1, 0);
-        rightCanvas.setWidth(rightSize.getWidth());
-        rightCanvas.setHeight(rightSize.getHeight());
-        //rightCanvas.widthProperty().set(rightSize.getWidth());
-        //rightCanvas.heightProperty().set(rightSize.getHeight());
+        rightCanvas.widthProperty().set(rightSize.getWidth());
+        rightCanvas.heightProperty().set(rightSize.getHeight());
 
         leftCanvas.resize(leftSize.getWidth(), leftSize.getWidth());
         rightCanvas.resize(rightSize.getWidth(), rightSize.getWidth());
+
+        if(ON_DEMAND_RENDERING && renderingController != null)
+            renderingController.render();
     }
 
     @Override
@@ -173,7 +176,10 @@ public class FractalApplication extends Application {
             FractalLogger.logArgumentsGUI(mandelbrotX, mandelbrotY, mandelbrotZoom, power,
                     iterations, juliaX, juliaY, juliaZoom, colourMode);
 
-            renderingController.startRendering();
+            if(ON_DEMAND_RENDERING)
+                renderingController.render();
+            else
+                renderingController.startRendering();
         });
 
         primaryStage.setOnCloseRequest(this::onWindowClose);
@@ -219,18 +225,6 @@ public class FractalApplication extends Application {
                     break;
             }
         }
-    }
-
-    private SimpleImage getJuliaImage() {
-        SimpleImage ret = new SimpleImage(rightWidth.intValue(), rightHeight.intValue());
-
-        for (int x = 0; x < rightWidth.intValue(); x++) {
-            for (int y = 0; y < rightHeight.intValue(); y++) {
-                //ret.setPixel(x, y, GetJuliaPixel(x, y));
-            }
-        }
-
-        return ret;
     }
 
     private void onWindowClose(WindowEvent event)

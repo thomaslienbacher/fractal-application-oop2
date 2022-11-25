@@ -29,6 +29,7 @@ public class RenderingController {
     Canvas juliaCanvas; // right canvas
 
     private boolean exitThreads = false;
+    private JuliaRenderer juliaRenderer;
 
     public RenderingController(DoubleProperty power, IntegerProperty iteration, DoubleProperty mandelbrotX,
                                DoubleProperty mandelbrotY, DoubleProperty mandelbrotZoom, DoubleProperty juliaX,
@@ -49,6 +50,33 @@ public class RenderingController {
         this.connections = connections;
         this.mandelbrotCanvas = mandelbrotCanvas;
         this.juliaCanvas = juliaCanvas;
+    }
+
+    public void render() {
+        System.out.println("Rendering...");
+
+        if(juliaRenderer != null)
+        {
+            juliaRenderer.stop();
+        }
+
+        //Render julia
+        juliaRenderer = new JuliaRenderer(power.get(), iterations.get(), juliaX.get(),
+                juliaY.get(), juliaZoom.get(), colourMode.getValue(), renderMode.getValue(),
+                tasksPerWorker.get(), connections.getValue(), juliaCanvas);
+
+        Thread t = new Thread(juliaRenderer, "julia-renderer");
+        t.start();
+
+        try
+        {
+            //This is dumb but try it without that yourself...
+            t.join();
+        }
+        catch(Exception e)
+        {
+
+        }
     }
 
 
@@ -84,6 +112,7 @@ public class RenderingController {
                 //System.out.println("Starting new julia renderer");
 
                 try {
+                    t.join();
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
@@ -95,6 +124,12 @@ public class RenderingController {
 
     public void stopRendering() {
         //TODO implement, interrupt threads or kill them via flag
+
+        //For on-demand rendering approach
+        if(juliaRenderer != null)
+            juliaRenderer.stop();
+
+        //For continuous rendering approach
         exitThreads = true;
     }
 }
