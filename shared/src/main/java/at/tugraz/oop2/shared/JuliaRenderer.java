@@ -10,7 +10,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class MandelbrotRenderer implements Runnable {
+public class JuliaRenderer implements Runnable {
 
     double power;
     int iterations;
@@ -23,7 +23,7 @@ public class MandelbrotRenderer implements Runnable {
     List<InetSocketAddress> connections;
     Canvas canvas;
 
-    public MandelbrotRenderer(double power, int iterations, double x, double y, double zoom, ColourModes colourMode, RenderMode renderMode, int tasksPerWorker, List<InetSocketAddress> connections, Canvas canvas) {
+    public JuliaRenderer(double power, int iterations, double x, double y, double zoom, ColourModes colourMode, RenderMode renderMode, int tasksPerWorker, List<InetSocketAddress> connections, Canvas canvas) {
         this.power = power;
         this.iterations = iterations;
         this.x = x;
@@ -36,11 +36,57 @@ public class MandelbrotRenderer implements Runnable {
         this.canvas = canvas;
     }
 
-    static class MandelbrotTask implements Callable<SimpleImage> {
+    @Override
+    public void run() {
+        if (renderMode == RenderMode.LOCAL) {
+            RenderLocal();
+        } else if (renderMode == RenderMode.DISTRIBUTED) {
+            throw new RuntimeException("not implemented");
+        }
+    }
 
-        MandelbrotRenderOptions options;
+    //Renders local, blocks until finished
+    private void RenderLocal()
+    {
+        int width = (int) canvas.getWidth();
+        int height = (int) canvas.getHeight();
 
-        public MandelbrotTask(MandelbrotRenderOptions options) {
+        // lets utilize all the power
+        int nproc = Runtime.getRuntime().availableProcessors();
+        ExecutorService executor = Executors.newFixedThreadPool(nproc);
+
+        int nTasks = 1;
+        var tasks = new ArrayList<JuliaRenderer.JuliaTask>();
+
+        for (int i = 0; i < nTasks; i++) {
+            //Todo change constantX and constantY (I dont know what they are so set to 0 for now)
+            var opts = new JuliaRenderOptions(x, y, width, height, zoom, power, iterations, 0, 0,
+                    colourMode, i, nTasks, renderMode);
+            tasks.add(new JuliaRenderer.JuliaTask(opts));
+        }
+
+        try {
+            var results = executor.invokeAll(tasks);
+            var images = results.stream().map((a) -> {
+                try {
+                    return a.get();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }).toList();
+
+            var completeImage = new SimpleImage(images);
+            completeImage.copyToCanvas(canvas);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    static class JuliaTask implements Callable<SimpleImage> {
+
+        JuliaRenderOptions options;
+
+        public JuliaTask(JuliaRenderOptions options) {
             this.options = options;
         }
 
@@ -65,9 +111,11 @@ public class MandelbrotRenderer implements Runnable {
         }
 
         private short[] getPixel(int x, int y) {
-            short s = (short) (y % 255);
-            short t = (short) (x % 255);
-            return new short[]{s, t, (short) Math.abs(s - t)};
+            //TODO Maths
+            //short s = (short) (y % 255);
+            //short t = (short) (x % 255);
+            //return new short[]{s, t, (short) Math.abs(s - t)};
+            return new short[]{0, 255, 255};
         }
 
         private int getHeightStart() {
@@ -86,43 +134,4 @@ public class MandelbrotRenderer implements Runnable {
         }
     }
 
-
-    @Override
-    public void run() {
-        int width = (int) canvas.getWidth();
-        int height = (int) canvas.getHeight();
-
-        if (renderMode == RenderMode.LOCAL) {
-            // lets utilize all the power
-            int nproc = Runtime.getRuntime().availableProcessors();
-            ExecutorService executor = Executors.newFixedThreadPool(nproc);
-
-            int nTasks = 1;
-            var tasks = new ArrayList<MandelbrotTask>();
-
-            for (int i = 0; i < nTasks; i++) {
-                var opts = new MandelbrotRenderOptions(x, y, width, height, zoom, power, iterations,
-                        colourMode, i, nTasks, renderMode);
-                tasks.add(new MandelbrotTask(opts));
-            }
-
-            try {
-                var results = executor.invokeAll(tasks);
-                var images = results.stream().map((a) -> {
-                    try {
-                        return a.get();
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }).toList();
-
-                var completeImage = new SimpleImage(images);
-                completeImage.copyToCanvas(canvas);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        } else if (renderMode == RenderMode.DISTRIBUTED) {
-            throw new RuntimeException("not implemented");
-        }
-    }
 }

@@ -67,16 +67,25 @@ public class FractalApplication extends Application {
     @Getter
     private DoubleProperty rightWidth = new SimpleDoubleProperty();
 
+    private boolean WindowClosed = false;
     private RenderingController renderingController;
 
     private void updateSizes() {
+
+        if(WindowClosed)
+        {
+            return;
+        }
+
         Bounds leftSize = mainPane.getCellBounds(0, 0);
         leftCanvas.widthProperty().set(leftSize.getWidth());
         leftCanvas.heightProperty().set(leftSize.getHeight());
 
         Bounds rightSize = mainPane.getCellBounds(1, 0);
-        rightCanvas.widthProperty().set(rightSize.getWidth());
-        rightCanvas.heightProperty().set(rightSize.getHeight());
+        rightCanvas.setWidth(rightSize.getWidth());
+        rightCanvas.setHeight(rightSize.getHeight());
+        //rightCanvas.widthProperty().set(rightSize.getWidth());
+        //rightCanvas.heightProperty().set(rightSize.getHeight());
 
         leftCanvas.resize(leftSize.getWidth(), leftSize.getWidth());
         rightCanvas.resize(rightSize.getWidth(), rightSize.getWidth());
@@ -166,6 +175,8 @@ public class FractalApplication extends Application {
 
             renderingController.startRendering();
         });
+
+        primaryStage.setOnCloseRequest(this::onWindowClose);
     }
 
     void parseArguments() {
@@ -220,5 +231,11 @@ public class FractalApplication extends Application {
         }
 
         return ret;
+    }
+
+    private void onWindowClose(WindowEvent event)
+    {
+        WindowClosed = true;
+        renderingController.stopRendering();
     }
 }

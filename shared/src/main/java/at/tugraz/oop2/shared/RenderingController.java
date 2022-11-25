@@ -28,6 +28,8 @@ public class RenderingController {
     Canvas mandelbrotCanvas; // left canvas
     Canvas juliaCanvas; // right canvas
 
+    private boolean exitThreads = false;
+
     public RenderingController(DoubleProperty power, IntegerProperty iteration, DoubleProperty mandelbrotX,
                                DoubleProperty mandelbrotY, DoubleProperty mandelbrotZoom, DoubleProperty juliaX,
                                DoubleProperty juliaY, DoubleProperty juliaZoom, Property<ColourModes> colourMode,
@@ -52,14 +54,14 @@ public class RenderingController {
 
     public void startRendering() {
         Thread mandelbrot = new Thread(() -> {
-            while (true) {
+            while (!exitThreads) {
                 var renderer = new MandelbrotRenderer(power.get(), iterations.get(), mandelbrotX.get(),
                         mandelbrotY.get(), mandelbrotZoom.get(), colourMode.getValue(), renderMode.getValue(),
                         tasksPerWorker.get(), connections.getValue(), mandelbrotCanvas);
 
                 Thread t = new Thread(renderer, "mandelbrot-renderer");
                 t.start();
-                System.out.println("starting new mandelbrot renderer");
+                //System.out.println("starting new mandelbrot renderer");
 
                 try {
                     t.join();
@@ -72,11 +74,17 @@ public class RenderingController {
         mandelbrot.start();
 
         Thread julia = new Thread(() -> {
-            while (true) {
-                //TODO implement
+            while (!exitThreads) {
+                var renderer = new JuliaRenderer(power.get(), iterations.get(), juliaX.get(),
+                        juliaY.get(), juliaZoom.get(), colourMode.getValue(), renderMode.getValue(),
+                        tasksPerWorker.get(), connections.getValue(), juliaCanvas);
+
+                Thread t = new Thread(renderer, "julia-renderer");
+                t.start();
+                //System.out.println("Starting new julia renderer");
 
                 try {
-                    Thread.sleep(5000);
+                    Thread.sleep(500);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -87,5 +95,6 @@ public class RenderingController {
 
     public void stopRendering() {
         //TODO implement, interrupt threads or kill them via flag
+        exitThreads = true;
     }
 }

@@ -84,7 +84,7 @@ public class SimpleImage implements Serializable {
         int minWidth = Math.min(width, cvWidth);
         int minHeight = Math.min(height, cvHeight);
 
-        System.out.println("minw: " + minWidth + " minh: " + minHeight);
+        //System.out.println("minw: " + minWidth + " minh: " + minHeight);
 
         var writer = canvas.getGraphicsContext2D().getPixelWriter();
         for (int x = 0; x < minWidth; x++) {
