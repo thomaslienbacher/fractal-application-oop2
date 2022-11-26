@@ -22,6 +22,8 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 public class FractalApplication extends Application {
@@ -72,6 +74,8 @@ public class FractalApplication extends Application {
     private boolean WindowClosed = false;
     private RenderingController renderingController;
 
+    private ReentrantLock juliaLock;
+
     private void updateSizes() {
 
         if(WindowClosed)
@@ -96,6 +100,8 @@ public class FractalApplication extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        juliaLock = new ReentrantLock();
+
         mainPane = new GridPane();
 
         leftCanvas = new Canvas();
@@ -165,7 +171,7 @@ public class FractalApplication extends Application {
 
         renderingController = new RenderingController(power, iterations, mandelbrotX,
                 mandelbrotY, mandelbrotZoom, juliaX, juliaY, juliaZoom, colourMode,
-                renderMode, tasksPerWorker, connections, leftCanvas, rightCanvas);
+                renderMode, tasksPerWorker, connections, leftCanvas, rightCanvas, juliaLock);
 
         Platform.runLater(() -> {
             updateSizes();

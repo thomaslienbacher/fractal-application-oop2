@@ -7,6 +7,7 @@ import javafx.scene.canvas.Canvas;
 
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
 
 public class RenderingController {
 
@@ -30,12 +31,13 @@ public class RenderingController {
 
     private boolean exitThreads = false;
     private JuliaRenderer juliaRenderer;
+    private Lock juliaLock;
 
     public RenderingController(DoubleProperty power, IntegerProperty iteration, DoubleProperty mandelbrotX,
                                DoubleProperty mandelbrotY, DoubleProperty mandelbrotZoom, DoubleProperty juliaX,
                                DoubleProperty juliaY, DoubleProperty juliaZoom, Property<ColourModes> colourMode,
                                Property<RenderMode> renderMode, IntegerProperty tasksPerWorker, Property<List<InetSocketAddress>> connections,
-                               Canvas mandelbrotCanvas, Canvas juliaCanvas) {
+                               Canvas mandelbrotCanvas, Canvas juliaCanvas, Lock juliaLock) {
         this.power = power;
         this.iterations = iteration;
         this.mandelbrotX = mandelbrotX;
@@ -50,6 +52,7 @@ public class RenderingController {
         this.connections = connections;
         this.mandelbrotCanvas = mandelbrotCanvas;
         this.juliaCanvas = juliaCanvas;
+        this.juliaLock = juliaLock;
     }
 
     public void render() {
@@ -63,7 +66,7 @@ public class RenderingController {
         //Render julia
         juliaRenderer = new JuliaRenderer(power.get(), iterations.get(), juliaX.get(),
                 juliaY.get(), juliaZoom.get(), colourMode.getValue(), renderMode.getValue(),
-                tasksPerWorker.get(), connections.getValue(), juliaCanvas);
+                tasksPerWorker.get(), connections.getValue(), juliaCanvas, juliaLock);
 
         Thread t = new Thread(juliaRenderer, "julia-renderer");
         t.start();
@@ -71,7 +74,7 @@ public class RenderingController {
         try
         {
             //This is dumb but try it without that yourself...
-            t.join();
+            //t.join();
         }
         catch(Exception e)
         {
@@ -105,7 +108,7 @@ public class RenderingController {
             while (!exitThreads) {
                 var renderer = new JuliaRenderer(power.get(), iterations.get(), juliaX.get(),
                         juliaY.get(), juliaZoom.get(), colourMode.getValue(), renderMode.getValue(),
-                        tasksPerWorker.get(), connections.getValue(), juliaCanvas);
+                        tasksPerWorker.get(), connections.getValue(), juliaCanvas, juliaLock);
 
                 Thread t = new Thread(renderer, "julia-renderer");
                 t.start();

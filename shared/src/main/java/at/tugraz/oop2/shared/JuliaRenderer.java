@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
 
 public class JuliaRenderer implements Runnable {
 
@@ -23,8 +24,9 @@ public class JuliaRenderer implements Runnable {
     List<InetSocketAddress> connections;
     Canvas canvas;
     private boolean exit = false;
+    private Lock canvasLock;
 
-    public JuliaRenderer(double power, int iterations, double x, double y, double zoom, ColourModes colourMode, RenderMode renderMode, int tasksPerWorker, List<InetSocketAddress> connections, Canvas canvas) {
+    public JuliaRenderer(double power, int iterations, double x, double y, double zoom, ColourModes colourMode, RenderMode renderMode, int tasksPerWorker, List<InetSocketAddress> connections, Canvas canvas, Lock canvasLock) {
         this.power = power;
         this.iterations = iterations;
         this.x = x;
@@ -35,6 +37,7 @@ public class JuliaRenderer implements Runnable {
         this.tasksPerWorker = tasksPerWorker;
         this.connections = connections;
         this.canvas = canvas;
+        this.canvasLock = canvasLock;
     }
 
     @Override
@@ -86,10 +89,15 @@ public class JuliaRenderer implements Runnable {
 
             var completeImage = new SimpleImage(images);
 
+            canvasLock.lock();
             if(exit)//Important breakpoint #2: before drawing on the canvas
+            {
+                canvasLock.unlock();
                 return;
+            }
 
             completeImage.copyToCanvas(canvas);
+            canvasLock.unlock();
         }
         catch (Exception e) {
             throw new RuntimeException(e);
