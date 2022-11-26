@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
 
 public class MandelbrotRenderer implements Runnable {
 
@@ -22,8 +23,10 @@ public class MandelbrotRenderer implements Runnable {
     int tasksPerWorker;
     List<InetSocketAddress> connections;
     Canvas canvas;
+    private Lock canvasLock;
+    private boolean exit = false;
 
-    public MandelbrotRenderer(double power, int iterations, double x, double y, double zoom, ColourModes colourMode, RenderMode renderMode, int tasksPerWorker, List<InetSocketAddress> connections, Canvas canvas) {
+    public MandelbrotRenderer(double power, int iterations, double x, double y, double zoom, ColourModes colourMode, RenderMode renderMode, int tasksPerWorker, List<InetSocketAddress> connections, Canvas canvas, Lock mandelbrotLock) {
         this.power = power;
         this.iterations = iterations;
         this.x = x;
@@ -34,6 +37,12 @@ public class MandelbrotRenderer implements Runnable {
         this.tasksPerWorker = tasksPerWorker;
         this.connections = connections;
         this.canvas = canvas;
+        this.canvasLock = mandelbrotLock;
+    }
+
+    public void stop()
+    {
+        exit = true;
     }
 
     static class MandelbrotTask implements Callable<SimpleImage> {
@@ -107,6 +116,9 @@ public class MandelbrotRenderer implements Runnable {
             }
 
             try {
+                if(exit)//Important breakpoint #1: before doing the work
+                    return;
+
                 var results = executor.invokeAll(tasks);
                 var images = results.stream().map((a) -> {
                     try {
@@ -117,7 +129,17 @@ public class MandelbrotRenderer implements Runnable {
                 }).toList();
 
                 var completeImage = new SimpleImage(images);
+
+                canvasLock.lock();
+
+                if(exit)//Important breakpoint #2: before drawing on the canvas
+                {
+                    canvasLock.unlock();
+                    return;
+                }
+
                 completeImage.copyToCanvas(canvas);
+                canvasLock.unlock();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

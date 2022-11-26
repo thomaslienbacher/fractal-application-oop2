@@ -75,6 +75,7 @@ public class FractalApplication extends Application {
     private RenderingController renderingController;
 
     private ReentrantLock juliaLock;
+    private ReentrantLock mandelbrotLock;
 
     private void updateSizes() {
 
@@ -101,6 +102,7 @@ public class FractalApplication extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         juliaLock = new ReentrantLock();
+        mandelbrotLock = new ReentrantLock();
 
         mainPane = new GridPane();
 
@@ -171,7 +173,7 @@ public class FractalApplication extends Application {
 
         renderingController = new RenderingController(power, iterations, mandelbrotX,
                 mandelbrotY, mandelbrotZoom, juliaX, juliaY, juliaZoom, colourMode,
-                renderMode, tasksPerWorker, connections, leftCanvas, rightCanvas, juliaLock);
+                renderMode, tasksPerWorker, connections, leftCanvas, rightCanvas, juliaLock, mandelbrotLock);
 
         Platform.runLater(() -> {
             updateSizes();
