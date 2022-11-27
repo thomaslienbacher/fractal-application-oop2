@@ -92,6 +92,7 @@ public class JuliaRenderer implements Runnable {
             }).toList();
 
             var completeImage = new SimpleImage(images);
+            executor.shutdown();
 
             if(exit)//Important breakpoint #2: before drawing on the canvas
             {
