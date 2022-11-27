@@ -10,6 +10,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class MandelbrotRenderer implements Runnable {
 
@@ -23,10 +24,10 @@ public class MandelbrotRenderer implements Runnable {
     int tasksPerWorker;
     List<InetSocketAddress> connections;
     Canvas canvas;
-    private Lock canvasLock;
+    private ReentrantLock canvasLock;
     private boolean exit = false;
 
-    public MandelbrotRenderer(double power, int iterations, double x, double y, double zoom, ColourModes colourMode, RenderMode renderMode, int tasksPerWorker, List<InetSocketAddress> connections, Canvas canvas, Lock mandelbrotLock) {
+    public MandelbrotRenderer(double power, int iterations, double x, double y, double zoom, ColourModes colourMode, RenderMode renderMode, int tasksPerWorker, List<InetSocketAddress> connections, Canvas canvas, ReentrantLock mandelbrotLock) {
         this.power = power;
         this.iterations = iterations;
         this.x = x;
@@ -40,8 +41,7 @@ public class MandelbrotRenderer implements Runnable {
         this.canvasLock = mandelbrotLock;
     }
 
-    public void stop()
-    {
+    public void stop() {
         exit = true;
     }
 
@@ -98,26 +98,28 @@ public class MandelbrotRenderer implements Runnable {
 
     @Override
     public void run() {
-        canvasLock.lock();
-        int width = (int) canvas.getWidth();
-        int height = (int) canvas.getHeight();
 
         if (renderMode == RenderMode.LOCAL) {
-            // lets utilize all the power
-            int nproc = Runtime.getRuntime().availableProcessors();
-            ExecutorService executor = Executors.newFixedThreadPool(nproc);
-
-            int nTasks = 1;
-            var tasks = new ArrayList<MandelbrotTask>();
-
-            for (int i = 0; i < nTasks; i++) {
-                var opts = new MandelbrotRenderOptions(x, y, width, height, zoom, power, iterations,
-                        colourMode, i, nTasks, renderMode);
-                tasks.add(new MandelbrotTask(opts));
-            }
-
+            canvasLock.lock();
+            ExecutorService executor = null;
             try {
-                if(exit)//Important breakpoint #1: before doing the work
+                int width = (int) canvas.getWidth();
+                int height = (int) canvas.getHeight();
+                // lets utilize all the power
+                int nproc = Runtime.getRuntime().availableProcessors();
+                executor = Executors.newFixedThreadPool(nproc);
+
+                int nTasks = 1;
+                var tasks = new ArrayList<MandelbrotTask>();
+
+                for (int i = 0; i < nTasks; i++) {
+                    var opts = new MandelbrotRenderOptions(x, y, width, height, zoom, power, iterations,
+                            colourMode, i, nTasks, renderMode);
+                    tasks.add(new MandelbrotTask(opts));
+                }
+
+
+                if (exit)//Important breakpoint #1: before doing the work
                 {
                     canvasLock.unlock();
                     return;
@@ -135,16 +137,27 @@ public class MandelbrotRenderer implements Runnable {
                 var completeImage = new SimpleImage(images);
                 executor.shutdown();
 
-                if(exit)//Important breakpoint #2: before drawing on the canvas
+                if (exit)//Important breakpoint #2: before drawing on the canvas
                 {
+                    executor.shutdown();
                     canvasLock.unlock();
                     return;
                 }
 
-                completeImage.copyToCanvas(canvas);
+                //completeImage.copyToCanvas(canvas);
                 canvasLock.unlock();
+            } catch (InterruptedException ie) {
+
             } catch (Exception e) {
+                canvasLock.unlock();
+                if (executor != null)
+                    executor.shutdown();
                 throw new RuntimeException(e);
+            } finally {
+                if (canvasLock.isHeldByCurrentThread())
+                    canvasLock.unlock();
+                if (executor != null)
+                    executor.shutdown();
             }
         } else if (renderMode == RenderMode.DISTRIBUTED) {
             throw new RuntimeException("not implemented");

@@ -79,8 +79,7 @@ public class FractalApplication extends Application {
 
     private void updateSizes() {
 
-        if(WindowClosed)
-        {
+        if (WindowClosed) {
             return;
         }
 
@@ -101,7 +100,7 @@ public class FractalApplication extends Application {
 
         juliaLock.unlock();
 
-        if(ON_DEMAND_RENDERING && renderingController != null)
+        if (ON_DEMAND_RENDERING && renderingController != null)
             renderingController.render();
     }
 
@@ -149,6 +148,7 @@ public class FractalApplication extends Application {
 
 
         controlPane = new GridPane();
+        //min, preferred, max
         ColumnConstraints controlLabelColConstraint =
                 new ColumnConstraints(195, 195, 200, Priority.ALWAYS, HPos.CENTER, true);
         ColumnConstraints controlControlColConstraint =
@@ -182,7 +182,6 @@ public class FractalApplication extends Application {
                 renderMode, tasksPerWorker, connections, leftCanvas, rightCanvas, juliaLock, mandelbrotLock);
 
         Platform.runLater(() -> {
-            updateSizes();
             FractalLogger.logInitializedGUI(mainPane, primaryStage, leftCanvas, rightCanvas);
 
             parseArguments();
@@ -190,9 +189,9 @@ public class FractalApplication extends Application {
             FractalLogger.logArgumentsGUI(mandelbrotX, mandelbrotY, mandelbrotZoom, power,
                     iterations, juliaX, juliaY, juliaZoom, colourMode);
 
-            if(ON_DEMAND_RENDERING)
-                renderingController.render();
-            else
+            updateSizes();
+
+            if (!ON_DEMAND_RENDERING)
                 renderingController.startRendering();
         });
 
@@ -241,8 +240,7 @@ public class FractalApplication extends Application {
         }
     }
 
-    private void onWindowClose(WindowEvent event)
-    {
+    private void onWindowClose(WindowEvent event) {
         WindowClosed = true;
         renderingController.stopRendering();
     }

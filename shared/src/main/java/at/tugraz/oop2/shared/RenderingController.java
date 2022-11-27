@@ -9,6 +9,7 @@ import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class RenderingController {
 
@@ -33,7 +34,7 @@ public class RenderingController {
     private boolean exitThreads = false;
     private JuliaRenderer juliaRenderer;
     private MandelbrotRenderer mandelbrotRenderer;
-    private Lock juliaLock, mandelbrotLock;
+    private ReentrantLock juliaLock, mandelbrotLock;
 
     private Thread mandelbrotThread, juliaThread;
 
@@ -44,7 +45,7 @@ public class RenderingController {
                                DoubleProperty mandelbrotY, DoubleProperty mandelbrotZoom, DoubleProperty juliaX,
                                DoubleProperty juliaY, DoubleProperty juliaZoom, Property<ColourModes> colourMode,
                                Property<RenderMode> renderMode, IntegerProperty tasksPerWorker, Property<List<InetSocketAddress>> connections,
-                               Canvas mandelbrotCanvas, Canvas juliaCanvas, Lock juliaLock, Lock mandelbrotLock) {
+                               Canvas mandelbrotCanvas, Canvas juliaCanvas, ReentrantLock juliaLock, ReentrantLock mandelbrotLock) {
         this.power = power;
         this.iterations = iteration;
         this.mandelbrotX = mandelbrotX;
@@ -69,11 +70,13 @@ public class RenderingController {
         System.out.println("Threads: " + java.lang.Thread.activeCount() + " /Renders: " + renderCount);
 
         if (mandelbrotRenderer != null) {
-            mandelbrotRenderer.stop();
+            //mandelbrotRenderer.stop();
+            mandelbrotThread.interrupt();
         }
 
         if (juliaRenderer != null) {
-            juliaRenderer.stop();
+            //juliaRenderer.stop();
+            juliaThread.interrupt();
         }
 
         //Render mandelbrot
