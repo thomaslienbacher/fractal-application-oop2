@@ -83,6 +83,9 @@ public class FractalApplication extends Application {
             return;
         }
 
+        if (ON_DEMAND_RENDERING && renderingController != null)
+            renderingController.stopRendering();
+
         Bounds leftSize = mainPane.getCellBounds(0, 0);
         mandelbrotLock.lock();
         leftCanvas.widthProperty().set(leftSize.getWidth());

@@ -70,12 +70,10 @@ public class RenderingController {
         System.out.println("Threads: " + java.lang.Thread.activeCount() + " /Renders: " + renderCount);
 
         if (mandelbrotRenderer != null) {
-            //mandelbrotRenderer.stop();
             mandelbrotThread.interrupt();
         }
 
         if (juliaRenderer != null) {
-            //juliaRenderer.stop();
             juliaThread.interrupt();
         }
 
@@ -143,11 +141,32 @@ public class RenderingController {
         //TODO implement, interrupt threads or kill them via flag
 
         //For on-demand rendering approach
+        /*
         if (juliaRenderer != null)
             juliaRenderer.stop();
 
         if (mandelbrotRenderer != null)
-            mandelbrotRenderer.stop();
+            mandelbrotRenderer.stop();*/
+
+        if (mandelbrotRenderer != null) {
+            //mandelbrotRenderer.stop();
+            mandelbrotThread.interrupt();
+            try {
+                mandelbrotThread.join();
+            } catch (Exception e) {
+
+            }
+        }
+
+        if (juliaRenderer != null) {
+            //juliaRenderer.stop();
+            juliaThread.interrupt();
+            try {
+                juliaThread.join();
+            } catch (Exception e) {
+
+            }
+        }
 
         //For continuous rendering approach
         exitThreads = true;

@@ -24,7 +24,6 @@ public class JuliaRenderer implements Runnable {
     int tasksPerWorker;
     List<InetSocketAddress> connections;
     Canvas canvas;
-    private boolean exit = false;
     private ReentrantLock canvasLock;
 
     public JuliaRenderer(double power, int iterations, double x, double y, double zoom, ColourModes colourMode, RenderMode renderMode, int tasksPerWorker, List<InetSocketAddress> connections, Canvas canvas, ReentrantLock canvasLock) {
@@ -50,10 +49,6 @@ public class JuliaRenderer implements Runnable {
         }
     }
 
-    public void stop() {
-        exit = true;
-    }
-
     //Renders local, blocks until finished
     private void RenderLocal() {
         canvasLock.lock();
@@ -77,13 +72,6 @@ public class JuliaRenderer implements Runnable {
                 tasks.add(new JuliaRenderer.JuliaTask(opts));
             }
 
-
-            if (exit)//Important breakpoint #1: before doing the work
-            {
-                canvasLock.unlock();
-                return;
-            }
-
             var results = executor.invokeAll(tasks);
             var images = results.stream().map((a) -> {
                 try {
@@ -96,14 +84,7 @@ public class JuliaRenderer implements Runnable {
             var completeImage = new SimpleImage(images);
             executor.shutdown();
 
-            if (exit)//Important breakpoint #2: before drawing on the canvas
-            {
-                executor.shutdown();
-                canvasLock.unlock();
-                return;
-            }
-
-            //completeImage.copyToCanvas(canvas);
+            completeImage.copyToCanvas(canvas);
             canvasLock.unlock();
         } catch (InterruptedException ie) {
 
