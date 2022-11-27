@@ -85,15 +85,21 @@ public class FractalApplication extends Application {
         }
 
         Bounds leftSize = mainPane.getCellBounds(0, 0);
+        mandelbrotLock.lock();
         leftCanvas.widthProperty().set(leftSize.getWidth());
         leftCanvas.heightProperty().set(leftSize.getHeight());
 
+        leftCanvas.resize(leftSize.getWidth(), leftSize.getWidth());
+        mandelbrotLock.unlock();
+
+        juliaLock.lock();
         Bounds rightSize = mainPane.getCellBounds(1, 0);
         rightCanvas.widthProperty().set(rightSize.getWidth());
         rightCanvas.heightProperty().set(rightSize.getHeight());
 
-        leftCanvas.resize(leftSize.getWidth(), leftSize.getWidth());
         rightCanvas.resize(rightSize.getWidth(), rightSize.getWidth());
+
+        juliaLock.unlock();
 
         if(ON_DEMAND_RENDERING && renderingController != null)
             renderingController.render();
@@ -114,7 +120,6 @@ public class FractalApplication extends Application {
 
         rightCanvas = new Canvas();
         rightCanvas.setCursor(Cursor.HAND);
-
 
         mainPane.add(rightCanvas, 1, 0);
 
@@ -138,8 +143,9 @@ public class FractalApplication extends Application {
         rightHeight.bind(rightCanvas.heightProperty());
         rightWidth.bind(rightCanvas.widthProperty());
 
-        mainPane.widthProperty().addListener(observable -> updateSizes());
-        mainPane.heightProperty().addListener(observable -> updateSizes());
+        mainPane.layoutBoundsProperty().addListener(observable -> updateSizes());
+        //mainPane.widthProperty().addListener(observable -> updateSizes());
+        //mainPane.heightProperty().addListener(observable -> updateSizes());
 
 
         controlPane = new GridPane();

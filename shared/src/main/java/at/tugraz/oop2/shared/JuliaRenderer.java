@@ -57,6 +57,7 @@ public class JuliaRenderer implements Runnable {
     //Renders local, blocks until finished
     private void RenderLocal()
     {
+        canvasLock.lock();
         int width = (int) canvas.getWidth();
         int height = (int) canvas.getHeight();
 
@@ -76,7 +77,10 @@ public class JuliaRenderer implements Runnable {
 
         try {
             if(exit)//Important breakpoint #1: before doing the work
+            {
+                canvasLock.unlock();
                 return;
+            }
 
             var results = executor.invokeAll(tasks);
             var images = results.stream().map((a) -> {
@@ -89,11 +93,10 @@ public class JuliaRenderer implements Runnable {
 
             var completeImage = new SimpleImage(images);
 
-            canvasLock.lock();
             if(exit)//Important breakpoint #2: before drawing on the canvas
             {
                 canvasLock.unlock();
-                return;
+                return ;
             }
 
             completeImage.copyToCanvas(canvas);
@@ -103,6 +106,8 @@ public class JuliaRenderer implements Runnable {
             throw new RuntimeException(e);
         }
     }
+
+
 
     static class JuliaTask implements Callable<SimpleImage> {
 

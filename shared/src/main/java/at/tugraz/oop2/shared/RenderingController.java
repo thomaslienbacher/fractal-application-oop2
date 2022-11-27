@@ -7,6 +7,7 @@ import javafx.scene.canvas.Canvas;
 
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.Lock;
 
 public class RenderingController {
@@ -36,6 +37,9 @@ public class RenderingController {
 
     private Thread mandelbrotThread, juliaThread;
 
+    //Temporary debug int
+    private int renderCount;
+
     public RenderingController(DoubleProperty power, IntegerProperty iteration, DoubleProperty mandelbrotX,
                                DoubleProperty mandelbrotY, DoubleProperty mandelbrotZoom, DoubleProperty juliaX,
                                DoubleProperty juliaY, DoubleProperty juliaZoom, Property<ColourModes> colourMode,
@@ -60,24 +64,16 @@ public class RenderingController {
     }
 
     public void render() {
+        renderCount++;
         System.out.println("Rendering...");
+        System.out.println("Threads: " + java.lang.Thread.activeCount() + " /Renders: " + renderCount);
+
         if (mandelbrotRenderer != null) {
             mandelbrotRenderer.stop();
-            try {
-                mandelbrotThread.join();
-            } catch (Exception e) {
-
-            }
         }
 
         if (juliaRenderer != null) {
             juliaRenderer.stop();
-
-            try {
-                juliaThread.join();
-            } catch (Exception e) {
-
-            }
         }
 
         //Render mandelbrot

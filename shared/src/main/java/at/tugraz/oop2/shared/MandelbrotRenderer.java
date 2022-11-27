@@ -98,6 +98,7 @@ public class MandelbrotRenderer implements Runnable {
 
     @Override
     public void run() {
+        canvasLock.lock();
         int width = (int) canvas.getWidth();
         int height = (int) canvas.getHeight();
 
@@ -117,7 +118,10 @@ public class MandelbrotRenderer implements Runnable {
 
             try {
                 if(exit)//Important breakpoint #1: before doing the work
+                {
+                    canvasLock.unlock();
                     return;
+                }
 
                 var results = executor.invokeAll(tasks);
                 var images = results.stream().map((a) -> {
@@ -129,8 +133,6 @@ public class MandelbrotRenderer implements Runnable {
                 }).toList();
 
                 var completeImage = new SimpleImage(images);
-
-                canvasLock.lock();
 
                 if(exit)//Important breakpoint #2: before drawing on the canvas
                 {
