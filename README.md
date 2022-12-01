@@ -212,7 +212,7 @@ For the fractals you had to calculate ![alt](http://latex.codecogs.com/svg.image
 
 Now it is easy to calculate ![alt](http://latex.codecogs.com/svg.image?z) to the power of ![alt](http://latex.codecogs.com/svg.image?k):
 
-![alt](https://latex.codecogs.com/svg.image?z^k=\left|z\right|^k*e^{i*\varphi*k}=\left|z\right|*cos(\varphi*k)&plus;i*\left|z\right|*sin(\varphi*k))
+![alt](https://latex.codecogs.com/svg.image?z^k=\left|z\right|^k*e^{i*\varphi*k}=\left|z\right|^k*cos(\varphi*k)&plus;i*\left|z\right|^k*sin(\varphi*k))
 
 Note that the magnitude ![alt](http://latex.codecogs.com/svg.image?\left|z\right|) is taken to the power of ![alt](http://latex.codecogs.com/svg.image?k), while the angle ![alt](http://latex.codecogs.com/svg.image?\varphi) is multiplied by ![alt](http://latex.codecogs.com/svg.image?k).
 
