@@ -50,6 +50,7 @@ public class MandelbrotRenderer extends Service<SimpleImage> {
             return img;
         }
 
+        //TODO: change to early return
         private int calcIterations(Complex c) {
             int iterationsHeld = -1;
 
@@ -83,7 +84,6 @@ public class MandelbrotRenderer extends Service<SimpleImage> {
         }
     }
 
-
     double power;
     int iterations;
     double x;
@@ -116,7 +116,6 @@ public class MandelbrotRenderer extends Service<SimpleImage> {
             }
         };
     }
-
 
     public void setBounds(int width, int height) {
         this.width = width;

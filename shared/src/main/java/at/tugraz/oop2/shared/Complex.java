@@ -19,6 +19,7 @@ public class Complex {
         this.img = copy.img;
     }
 
+    //TODO: create function without sqrt we can just compare with 4 instead of 2
     public double radius() {
         return Math.sqrt(real * real + img * img);
     }

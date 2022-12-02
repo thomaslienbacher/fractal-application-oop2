@@ -17,6 +17,76 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class JuliaRenderer extends Service<SimpleImage> {
 
+    static class JuliaTask implements Callable<SimpleImage> {
+
+        JuliaRenderOptions options;
+        int renderId;
+
+        ColourModes colourMode;
+
+        SpaceTransform transform;
+
+        public JuliaTask(int renderId, ColourModes colourMode, JuliaRenderOptions options) {
+            this.renderId = renderId;
+            this.colourMode = colourMode;
+            this.options = options;
+            this.transform = new SpaceTransform(options.width, options.height, options.zoom, options.centerX, options.centerY);
+            System.out.printf("|%04x| %s\n", renderId, transform);
+        }
+
+        @Override
+        public SimpleImage call() throws InvalidDepthException {
+            var img = new SimpleImage(options.width, getImageHeight());
+
+            System.out.printf("|%04x| [%d] %3d (total %3d) %s\n",
+                    this.renderId, options.fragmentNumber, getImageHeight(), options.height, options);
+
+            for (int y = 0; y < getImageHeight(); y++) {
+                for (int x = 0; x < options.width; x++) {
+                    var p = transform.convert(x, y * options.totalFragments + options.fragmentNumber);
+                    int iterationsHeld = calcIterations(p);
+                    img.setPixel(x, y, colourMode.getPixel(iterationsHeld, options.iterations));
+                }
+            }
+
+            return img;
+        }
+
+        //TODO: change to early return
+        private int calcIterations(Complex c) {
+            int iterationsHeld = -1;
+
+            var z = new Complex(c);
+            var addConst = new Complex(options.getConstantX(), options.getConstantY());
+
+            if (c.radius() < 2) {
+                for (int i = 0; i < options.iterations; i++) {
+                    z = z.pow(options.power);
+                    z = z.add(addConst);
+
+                    if (z.radius() >= 2.0) {
+                        iterationsHeld = i;
+                        break;
+                    }
+                }
+            } else {
+                iterationsHeld = 0;
+            }
+
+            return iterationsHeld;
+        }
+
+        private int getImageHeight() {
+            int h = options.height / options.totalFragments;
+
+            if (options.fragmentNumber < options.height % options.totalFragments) {
+                h++;
+            }
+
+            return h;
+        }
+    }
+
     double power;
     int iterations;
     double x;
@@ -57,21 +127,26 @@ public class JuliaRenderer extends Service<SimpleImage> {
 
     //Renders local, blocks until finished
     private SimpleImage renderLocal() {
+        // this function is almost the same as in MandelbrotRenderer, maybe some deduplication would be good
+        int renderId = (int) (Math.random() * Short.MAX_VALUE);
+        System.out.printf("Rendering Julia locally |%04x|\n", renderId);
         ExecutorService executor = null;
         try {
-
             // lets utilize all the power
             int nproc = Runtime.getRuntime().availableProcessors();
             executor = Executors.newFixedThreadPool(nproc);
 
-            int nTasks = 1;
-            var tasks = new ArrayList<JuliaRenderer.JuliaTask>();
+            int nTasks = nproc;
+            var tasks = new ArrayList<JuliaTask>();
 
             for (int i = 0; i < nTasks; i++) {
                 //Todo change constantX and constantY (I dont know what they are so set to 0 for now)
-                var opts = new JuliaRenderOptions(x, y, width, height, zoom, power, iterations, 0, 0,
-                        colourMode, i, nTasks, renderMode);
-                tasks.add(new JuliaRenderer.JuliaTask(opts));
+                double constantX = -0.1;
+                double constantY = 0.2;
+
+                var opts = new JuliaRenderOptions(x, y, width, height, zoom, power, iterations,
+                        constantX, constantY, colourMode, i, nTasks, renderMode);
+                tasks.add(new JuliaRenderer.JuliaTask(renderId, colourMode, opts));
             }
 
             var results = executor.invokeAll(tasks);
@@ -97,60 +172,4 @@ public class JuliaRenderer extends Service<SimpleImage> {
         }
         return null;
     }
-
-
-    static class JuliaTask implements Callable<SimpleImage> {
-
-        JuliaRenderOptions options;
-
-        public JuliaTask(JuliaRenderOptions options) {
-            this.options = options;
-        }
-
-        @Override
-        public SimpleImage call() throws InvalidDepthException {
-            //TODO: fix interleaving problem
-            /*System.out.printf("[%d] from inkl %d to exkl %d (total  %d) " +
-                            "%s\n",
-                    options.fragmentNumber, getHeightStart(), getHeightEnd(), options.height,
-                    options.toString());*/
-
-            int imgHeight = getHeightEnd() - getHeightStart();
-            var img = new SimpleImage(options.width, imgHeight);
-
-            for (int y = 0; y < imgHeight; y++) {
-                for (int x = 0; x < options.width; x++) {
-                    short[] pix = getPixel(x, y);
-                    img.setPixel(x, y, pix);
-                }
-            }
-
-            return img;
-        }
-
-        private short[] getPixel(int x, int y) {
-            //TODO Maths
-            short r = (short) (y % 255);
-            short g = (short) (x % 255);
-            short b = (short) (x + y % 255);
-            return new short[]{r, g, b};
-            //return new short[]{0, 255, 255};
-        }
-
-        private int getHeightStart() {
-            int perTask = options.height / options.totalFragments;
-            return perTask * options.fragmentNumber;
-        }
-
-        private int getHeightEnd() {
-            int perTask = options.height / options.totalFragments;
-
-            if (options.fragmentNumber == options.totalFragments - 1) {
-                return options.height;
-            }
-
-            return perTask * (options.fragmentNumber + 1);
-        }
-    }
-
 }
