@@ -52,28 +52,24 @@ public class JuliaRenderer extends Service<SimpleImage> {
             return img;
         }
 
-        //TODO: change to early return
         private int calcIterations(Complex c) {
-            int iterationsHeld = -1;
+            if (c.radiusSquared() > 4) {
+                return 0;
+            }
 
             var z = new Complex(c);
             var addConst = new Complex(options.getConstantX(), options.getConstantY());
 
-            if (c.radius() < 2) {
-                for (int i = 0; i < options.iterations; i++) {
-                    z = z.pow(options.power);
-                    z = z.add(addConst);
+            for (int i = 0; i < options.iterations; i++) {
+                z = z.pow(options.power);
+                z = z.add(addConst);
 
-                    if (z.radius() >= 2.0) {
-                        iterationsHeld = i;
-                        break;
-                    }
+                if (z.radiusSquared() >= 4.0) {
+                    return i;
                 }
-            } else {
-                iterationsHeld = 0;
             }
 
-            return iterationsHeld;
+            return -1;
         }
 
         private int getImageHeight() {
@@ -85,6 +81,7 @@ public class JuliaRenderer extends Service<SimpleImage> {
 
             return h;
         }
+
     }
 
     double power;
@@ -139,11 +136,11 @@ public class JuliaRenderer extends Service<SimpleImage> {
             int nTasks = nproc;
             var tasks = new ArrayList<JuliaTask>();
 
-            for (int i = 0; i < nTasks; i++) {
-                //Todo change constantX and constantY (I dont know what they are so set to 0 for now)
-                double constantX = -0.1;
-                double constantY = 0.2;
+            //Todo change constantX and constantY (I dont know what they are so set to 0 for now)
+            double constantX = Math.random() - 0.5;
+            double constantY = Math.random() - 0.5;
 
+            for (int i = 0; i < nTasks; i++) {
                 var opts = new JuliaRenderOptions(x, y, width, height, zoom, power, iterations,
                         constantX, constantY, colourMode, i, nTasks, renderMode);
                 tasks.add(new JuliaRenderer.JuliaTask(renderId, colourMode, opts));

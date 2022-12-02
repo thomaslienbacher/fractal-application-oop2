@@ -18,10 +18,13 @@ public class Complex {
         this.real = copy.real;
         this.img = copy.img;
     }
-
-    //TODO: create function without sqrt we can just compare with 4 instead of 2
+    
     public double radius() {
-        return Math.sqrt(real * real + img * img);
+        return Math.sqrt(radiusSquared());
+    }
+
+    public double radiusSquared() {
+        return real * real + img * img;
     }
 
     public Complex pow(double power) {

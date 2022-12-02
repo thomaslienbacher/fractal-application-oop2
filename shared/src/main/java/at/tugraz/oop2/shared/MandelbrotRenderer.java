@@ -50,27 +50,23 @@ public class MandelbrotRenderer extends Service<SimpleImage> {
             return img;
         }
 
-        //TODO: change to early return
         private int calcIterations(Complex c) {
-            int iterationsHeld = -1;
+            if (c.radiusSquared() > 4) {
+                return 0;
+            }
 
             var z = new Complex();
 
-            if (c.radius() < 2) {
-                for (int i = 0; i < options.iterations; i++) {
-                    z = z.pow(options.power);
-                    z = z.add(c);
+            for (int i = 0; i < options.iterations; i++) {
+                z = z.pow(options.power);
+                z = z.add(c);
 
-                    if (z.radius() >= 2.0) {
-                        iterationsHeld = i;
-                        break;
-                    }
+                if (z.radiusSquared() >= 4.0) {
+                    return i;
                 }
-            } else {
-                iterationsHeld = 0;
             }
 
-            return iterationsHeld;
+            return -1;
         }
 
         private int getImageHeight() {
@@ -82,6 +78,7 @@ public class MandelbrotRenderer extends Service<SimpleImage> {
 
             return h;
         }
+
     }
 
     double power;
