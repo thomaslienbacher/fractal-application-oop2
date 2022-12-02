@@ -18,13 +18,11 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import lombok.Getter;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.locks.ReentrantLock;
 
 
 public class FractalApplication extends Application {
@@ -34,6 +32,7 @@ public class FractalApplication extends Application {
     private Canvas leftCanvas;
     private GridPane controlPane;
 
+    //TODO: check if default values of properties are correct
 
     private IntegerProperty iterations = new SimpleIntegerProperty(128);
 
@@ -43,13 +42,13 @@ public class FractalApplication extends Application {
 
     private DoubleProperty mandelbrotY = new SimpleDoubleProperty(0.0);
 
-    private DoubleProperty mandelbrotZoom = new SimpleDoubleProperty(0.0);
+    private DoubleProperty mandelbrotZoom = new SimpleDoubleProperty(140.0);
 
     private DoubleProperty juliaX = new SimpleDoubleProperty(0.0);
 
     private DoubleProperty juliaY = new SimpleDoubleProperty(0.0);
 
-    private DoubleProperty juliaZoom = new SimpleDoubleProperty(0.0);
+    private DoubleProperty juliaZoom = new SimpleDoubleProperty(1.0);
 
     private Property<ColourModes> colourMode = new SimpleObjectProperty<>(ColourModes.BLACK_WHITE);
 
@@ -67,12 +66,12 @@ public class FractalApplication extends Application {
 
     private DoubleProperty rightWidth = new SimpleDoubleProperty();
 
-    private boolean WindowClosed = false;
+    private boolean windowClosed = false;
 
     Service<SimpleImage> mandelbrotRenderService, juliaRenderService;
 
     private void updateSizes() {
-        if (WindowClosed) {
+        if (windowClosed) {
             return;
         }
 
@@ -269,7 +268,7 @@ public class FractalApplication extends Application {
     }
 
     private void onWindowClose(WindowEvent event) {
-        WindowClosed = true;
+        windowClosed = true;
 
         if (mandelbrotRenderService != null && mandelbrotRenderService.isRunning()) {
             mandelbrotRenderService.cancel();
