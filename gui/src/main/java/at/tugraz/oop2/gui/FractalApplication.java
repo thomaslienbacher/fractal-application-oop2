@@ -32,8 +32,6 @@ public class FractalApplication extends Application {
     private Canvas leftCanvas;
     private GridPane controlPane;
 
-    //TODO: check if default values of properties are correct
-
     private IntegerProperty iterations = new SimpleIntegerProperty(128);
 
     private DoubleProperty power = new SimpleDoubleProperty(2.0);
@@ -42,19 +40,19 @@ public class FractalApplication extends Application {
 
     private DoubleProperty mandelbrotY = new SimpleDoubleProperty(0.0);
 
-    private DoubleProperty mandelbrotZoom = new SimpleDoubleProperty(140.0);
+    private DoubleProperty mandelbrotZoom = new SimpleDoubleProperty(0.0);
 
     private DoubleProperty juliaX = new SimpleDoubleProperty(0.0);
 
     private DoubleProperty juliaY = new SimpleDoubleProperty(0.0);
 
-    private DoubleProperty juliaZoom = new SimpleDoubleProperty(1.0);
+    private DoubleProperty juliaZoom = new SimpleDoubleProperty(0.0);
 
     private Property<ColourModes> colourMode = new SimpleObjectProperty<>(ColourModes.BLACK_WHITE);
 
     private Property<RenderMode> renderMode = new SimpleObjectProperty<>(RenderMode.LOCAL);
 
-    private IntegerProperty tasksPerWorker = new SimpleIntegerProperty(1);
+    private IntegerProperty tasksPerWorker = new SimpleIntegerProperty(5);
 
     private Property<List<InetSocketAddress>> connections = new SimpleObjectProperty<>(new ArrayList<>(10));
 

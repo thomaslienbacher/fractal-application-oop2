@@ -20,31 +20,16 @@ public class MandelbrotRenderer extends Service<SimpleImage> {
         MandelbrotRenderOptions options;
         int renderId;
 
-        double negX;
-        double posX;
-        double negY;
-        double posY;
-
         ColourModes colourMode;
+
+        SpaceTransform transform;
 
         public MandelbrotTask(int renderId, ColourModes colourMode, MandelbrotRenderOptions options) {
             this.renderId = renderId;
             this.colourMode = colourMode;
             this.options = options;
-
-            double w = options.width;
-            double h = options.height;
-
-            //TODO: use correct zoom calculation see README
-            double xDist = (w / 2) / options.zoom + options.centerX;
-            double yDist = (h / 2) / options.zoom + options.centerY;
-
-            this.negX = -xDist;
-            this.posX = xDist;
-            this.negY = -yDist;
-            this.posY = yDist;
-
-            System.out.printf("|%04x| x: %.4f %.4f y: %.4f %.4f\n", renderId, negX, posX, negY, posY);
+            this.transform = new SpaceTransform(options.width, options.height, options.zoom, options.centerX, options.centerY);
+            System.out.printf("|%04x| %s\n", renderId, transform);
         }
 
         @Override
@@ -56,60 +41,24 @@ public class MandelbrotRenderer extends Service<SimpleImage> {
 
             for (int y = 0; y < getImageHeight(); y++) {
                 for (int x = 0; x < options.width; x++) {
-                    double cx = convertCoordX(x);
-                    double cy = convertCoordY(y * options.totalFragments + options.fragmentNumber);
-                    short[] pix = getPixel(cx, cy);
-                    img.setPixel(x, y, pix);
+                    var p = transform.convert(x, y * options.totalFragments + options.fragmentNumber);
+                    int iterationsHeld = calcIterations(p);
+                    img.setPixel(x, y, colourMode.getPixel(iterationsHeld, options.iterations));
                 }
             }
 
             return img;
         }
 
-        /**
-         * Converts the image x coord to the complex plane
-         *
-         * @param x range [0; options.width)
-         * @return x on complex plane
-         */
-        private double convertCoordX(int x) {
-            double scalar = x;
-            //TODO: check is -1 really needed here
-            scalar /= (options.width - 1);
-            return MathUtils.interpolate(negX, posX, scalar);
-        }
-
-        /**
-         * Converts the image y coord to the complex plane
-         *
-         * @param y range [0; options.height)
-         * @return y on the complex plane
-         */
-        private double convertCoordY(int y) {
-            double scalar = y;
-            //TODO: check is -1 really needed here
-            scalar /= (options.height - 1);
-            return MathUtils.interpolate(negY, posY, scalar);
-        }
-
-        /**
-         * Returns the color of the pixel
-         *
-         * @param x real value on complex plane
-         * @param y img value complex plane
-         * @return pixel array
-         */
-        private short[] getPixel(double x, double y) {
-            var p = new Complex(x, y);
-
+        private int calcIterations(Complex c) {
             int iterationsHeld = -1;
 
             var z = new Complex();
 
-            if (p.radius() < 2) {
+            if (c.radius() < 2) {
                 for (int i = 0; i < options.iterations; i++) {
                     z = z.pow(options.power);
-                    z = z.add(p);
+                    z = z.add(c);
 
                     if (z.radius() >= 2.0) {
                         iterationsHeld = i;
@@ -120,23 +69,7 @@ public class MandelbrotRenderer extends Service<SimpleImage> {
                 iterationsHeld = 0;
             }
 
-            switch (colourMode) {
-                case BLACK_WHITE -> {
-                    return colorBlackWhite(iterationsHeld);
-                }
-                case COLOUR_FADE -> {
-                    throw new UnsupportedOperationException("only black white color mode works");
-                }
-                default -> throw new UnsupportedOperationException("color mode not supported: " + colourMode.name());
-            }
-        }
-
-        private short[] colorBlackWhite(int iterationsHeld) {
-            if (iterationsHeld == -1) {
-                return new short[]{0, 0, 0};
-            } else {
-                return new short[]{255, 255, 255};
-            }
+            return iterationsHeld;
         }
 
         private int getImageHeight() {
