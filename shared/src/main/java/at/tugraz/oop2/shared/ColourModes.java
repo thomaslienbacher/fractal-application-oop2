@@ -9,7 +9,7 @@ public enum ColourModes {
      *
      * @param iterationsHeld iterations the pixel held or -1 for infinity
      * @param maxIterations  maximum iterations in a calculation
-     * @return
+     * @return pixel array in RGB format
      */
     public short[] getPixel(int iterationsHeld, int maxIterations) {
         switch (this) {
@@ -17,7 +17,7 @@ public enum ColourModes {
                 return colorBlackWhite(iterationsHeld);
             }
             case COLOUR_FADE -> {
-                throw new UnsupportedOperationException("only black white color mode works");
+                return colorInterpolatedRedBlue(iterationsHeld, maxIterations);
             }
             default -> throw new UnsupportedOperationException("color mode not supported: " + this.name());
         }
@@ -29,5 +29,17 @@ public enum ColourModes {
         } else {
             return new short[]{255, 255, 255};
         }
+    }
+
+    private short[] colorInterpolatedRedBlue(int iterationsHeld, int maxIterations) {
+        //TODO: FIX this doesnt produce the results seen in the example screenshots
+        if (iterationsHeld == -1) {
+            return new short[]{0, 0, 0};
+        }
+
+        double s = (double) iterationsHeld / (double) maxIterations;
+        short r = MathUtils.interpolate((short) 255, (short) 0, s);
+        short b = MathUtils.interpolate((short) 0, (short) 255, s);
+        return new short[]{r, b, b};
     }
 }

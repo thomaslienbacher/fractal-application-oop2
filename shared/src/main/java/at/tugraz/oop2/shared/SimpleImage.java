@@ -86,6 +86,8 @@ public class SimpleImage implements Serializable {
 
         //System.out.println("minw: " + minWidth + " minh: " + minHeight);
 
+        //TODO: add default black background, I think that would be cool
+
         var writer = canvas.getGraphicsContext2D().getPixelWriter();
         for (int x = 0; x < minWidth; x++) {
             for (int y = 0; y < minHeight; y++) {

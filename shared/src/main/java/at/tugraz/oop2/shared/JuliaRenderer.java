@@ -136,7 +136,8 @@ public class JuliaRenderer extends Service<SimpleImage> {
             int nTasks = nproc;
             var tasks = new ArrayList<JuliaTask>();
 
-            //Todo change constantX and constantY (I dont know what they are so set to 0 for now)
+            //TODO change constantX and constantY
+            // maybe we should add new properties for these ??
             double constantX = Math.random() - 0.5;
             double constantY = Math.random() - 0.5;
 

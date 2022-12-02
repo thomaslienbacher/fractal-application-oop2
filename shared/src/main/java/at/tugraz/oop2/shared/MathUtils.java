@@ -15,4 +15,10 @@ public class MathUtils {
         assert i >= 0.0;
         return a + (b - a) * i;
     }
+
+    public static short interpolate(short a, short b, double i) {
+        assert i <= 1.0;
+        assert i >= 0.0;
+        return (short) interpolate((double) a, (double) b, i);
+    }
 }

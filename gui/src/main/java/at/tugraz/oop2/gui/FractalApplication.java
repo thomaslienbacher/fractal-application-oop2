@@ -4,6 +4,7 @@ import at.tugraz.oop2.shared.*;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.*;
+import javafx.collections.FXCollections;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.geometry.Bounds;
@@ -12,6 +13,10 @@ import javafx.geometry.VPos;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -21,6 +26,7 @@ import javafx.stage.WindowEvent;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -48,7 +54,8 @@ public class FractalApplication extends Application {
 
     private DoubleProperty juliaZoom = new SimpleDoubleProperty(0.0);
 
-    private Property<ColourModes> colourMode = new SimpleObjectProperty<>(ColourModes.BLACK_WHITE);
+    //TODO: default value is BLACK_WHITE !
+    private Property<ColourModes> colourMode = new SimpleObjectProperty<>(ColourModes.COLOUR_FADE);
 
     private Property<RenderMode> renderMode = new SimpleObjectProperty<>(RenderMode.LOCAL);
 
@@ -140,8 +147,7 @@ public class FractalApplication extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
-
+    public void start(Stage primaryStage) {
         mainPane = new GridPane();
 
         leftCanvas = new Canvas();
@@ -180,6 +186,33 @@ public class FractalApplication extends Application {
         //mainPane.heightProperty().addListener(observable -> updateSizes());
 
         controlPane = new GridPane();
+        controlPane.setVgap(4.0);
+        controlPane.add(new Label("Iterations"), 0, 0);
+        controlPane.add(new Label("Power"), 0, 1);
+        controlPane.add(new Label("Mandelbrot X center"), 0, 2);
+        controlPane.add(new Label("Mandelbrot Y center"), 0, 3);
+        controlPane.add(new Label("Julia X center"), 0, 4);
+        controlPane.add(new Label("Julia Y center"), 0, 5);
+        controlPane.add(new Label("ColorMode"), 0, 6); // colour = cringe
+        controlPane.add(new Label("RenderMode"), 0, 7);
+        controlPane.add(new Label("Tasks per Worker"), 0, 8);
+        controlPane.add(new Label("Connection Editor"), 0, 9);
+        controlPane.add(new Label("Connected Workers"), 0, 10);
+
+        // TODO: connect with properties and check if input is numerical
+        //  and add functionality
+        controlPane.add(new TextField(), 1, 0);
+        controlPane.add(new TextField(), 1, 1);
+        controlPane.add(new TextField(), 1, 2);
+        controlPane.add(new TextField(), 1, 3);
+        controlPane.add(new TextField(), 1, 4);
+        controlPane.add(new TextField(), 1, 5);
+        controlPane.add(new ComboBox<>(FXCollections.observableArrayList(ColourModes.values())), 1, 6);
+        controlPane.add(new ComboBox<>(FXCollections.observableArrayList(RenderMode.values())), 1, 7);
+        controlPane.add(new TextField(), 1, 8);
+        controlPane.add(new Button("Connection Editor"), 1, 9);
+        controlPane.add(new Label("~~~"), 1, 10);
+
         //min, preferred, max
         ColumnConstraints controlLabelColConstraint =
                 new ColumnConstraints(195, 195, 200, Priority.ALWAYS, HPos.CENTER, true);
@@ -187,7 +220,6 @@ public class FractalApplication extends Application {
                 new ColumnConstraints(195, 195, 195, Priority.ALWAYS, HPos.CENTER, true);
         controlPane.getColumnConstraints().addAll(controlLabelColConstraint, controlControlColConstraint);
         mainPane.add(controlPane, 2, 0);
-
 
         Scene scene = new Scene(mainPane);
 
