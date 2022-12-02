@@ -8,36 +8,37 @@ import javafx.scene.canvas.Canvas;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.random.RandomGeneratorFactory;
 
 public class MandelbrotRenderer extends Service<SimpleImage> {
 
     static class MandelbrotTask implements Callable<SimpleImage> {
 
         MandelbrotRenderOptions options;
+        int renderId;
 
-        public MandelbrotTask(MandelbrotRenderOptions options) {
+        public MandelbrotTask(int renderId, MandelbrotRenderOptions options) {
+            this.renderId = renderId;
             this.options = options;
         }
 
         @Override
         public SimpleImage call() throws InvalidDepthException {
-            /*System.out.printf("[%d] from inkl %d to exkl %d (total  %d) " +
-                            "%s\n",
-                    options.fragmentNumber, getHeightStart(), getHeightEnd(), options.height,
-                    options.toString());*/
+            var img = new SimpleImage(options.width, getImageHeight());
 
-            int imgHeight = getHeightEnd() - getHeightStart();
-            var img = new SimpleImage(options.width, imgHeight);
+            System.out.printf("|%04x| [%d] %3d (total %3d) %s\n",
+                    this.renderId, options.fragmentNumber, getImageHeight(), options.height, options);
 
-            for (int y = 0; y < imgHeight; y++) {
+            for (int y = 0; y < getImageHeight(); y++) {
                 for (int x = 0; x < options.width; x++) {
-                    short[] pix = getPixel(x, y);
+                    short[] pix = getPixel(x, y * options.totalFragments + options.fragmentNumber);
                     img.setPixel(x, y, pix);
                 }
             }
@@ -48,22 +49,17 @@ public class MandelbrotRenderer extends Service<SimpleImage> {
         private short[] getPixel(int x, int y) {
             short s = (short) (y % 255);
             short t = (short) (x % 255);
-            return new short[]{s, t, (short) Math.abs(s - t)};
+            return new short[]{s, t, s};
         }
 
-        private int getHeightStart() {
-            int perTask = options.height / options.totalFragments;
-            return perTask * options.fragmentNumber;
-        }
+        private int getImageHeight() {
+            int h = options.height / options.totalFragments;
 
-        private int getHeightEnd() {
-            int perTask = options.height / options.totalFragments;
-
-            if (options.fragmentNumber == options.totalFragments - 1) {
-                return options.height;
+            if (options.fragmentNumber < options.height % options.totalFragments) {
+                h++;
             }
 
-            return perTask * (options.fragmentNumber + 1);
+            return h;
         }
     }
 
@@ -95,35 +91,34 @@ public class MandelbrotRenderer extends Service<SimpleImage> {
     public Task<SimpleImage> createTask() {
         return new Task<SimpleImage>() {
             @Override
-            protected SimpleImage call() throws Exception {
+            protected SimpleImage call() {
                 return renderLocal();
             }
         };
     }
 
 
-
-    public void setBounds(int width, int height)
-    {
+    public void setBounds(int width, int height) {
         this.width = width;
         this.height = height;
     }
 
-    public SimpleImage renderLocal()
-    {
+    public SimpleImage renderLocal() {
+        int renderId = (int) (Math.random() * Short.MAX_VALUE);
+        System.out.printf("Rendering Mandelbrot locally |%04x|\n", renderId);
         ExecutorService executor = null;
         try {
             // lets utilize all the power
             int nproc = Runtime.getRuntime().availableProcessors();
             executor = Executors.newFixedThreadPool(nproc);
 
-            int nTasks = 1;
+            int nTasks = nproc;
             var tasks = new ArrayList<MandelbrotTask>();
 
             for (int i = 0; i < nTasks; i++) {
                 var opts = new MandelbrotRenderOptions(x, y, width, height, zoom, power, iterations,
                         colourMode, i, nTasks, renderMode);
-                tasks.add(new MandelbrotTask(opts));
+                tasks.add(new MandelbrotTask(renderId, opts));
             }
 
             var results = executor.invokeAll(tasks);
@@ -144,8 +139,9 @@ public class MandelbrotRenderer extends Service<SimpleImage> {
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
-            if (executor != null)
-                executor.shutdown();
+            if (executor != null) {
+                executor.shutdownNow();
+            }
         }
         return null;
     }

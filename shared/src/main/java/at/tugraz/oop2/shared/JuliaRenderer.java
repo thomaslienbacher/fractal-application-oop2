@@ -40,8 +40,7 @@ public class JuliaRenderer extends Service<SimpleImage> {
         this.connections = connections;
     }
 
-    public void setBounds(int width, int height)
-    {
+    public void setBounds(int width, int height) {
         this.width = width;
         this.height = height;
     }
@@ -100,8 +99,6 @@ public class JuliaRenderer extends Service<SimpleImage> {
     }
 
 
-
-
     static class JuliaTask implements Callable<SimpleImage> {
 
         JuliaRenderOptions options;
@@ -112,6 +109,7 @@ public class JuliaRenderer extends Service<SimpleImage> {
 
         @Override
         public SimpleImage call() throws InvalidDepthException {
+            //TODO: fix interleaving problem
             /*System.out.printf("[%d] from inkl %d to exkl %d (total  %d) " +
                             "%s\n",
                     options.fragmentNumber, getHeightStart(), getHeightEnd(), options.height,

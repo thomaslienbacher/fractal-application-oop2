@@ -29,32 +29,28 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class FractalApplication extends Application {
 
-    public static final boolean ON_DEMAND_RENDERING = true;
-
     private GridPane mainPane;
     private Canvas rightCanvas;
     private Canvas leftCanvas;
     private GridPane controlPane;
 
-    //TODO: remove getter annotation for properties ??
 
-    @Getter
     private IntegerProperty iterations = new SimpleIntegerProperty(128);
-    @Getter
+
     private DoubleProperty power = new SimpleDoubleProperty(2.0);
-    @Getter
+
     private DoubleProperty mandelbrotX = new SimpleDoubleProperty(0.0);
-    @Getter
+
     private DoubleProperty mandelbrotY = new SimpleDoubleProperty(0.0);
-    @Getter
+
     private DoubleProperty mandelbrotZoom = new SimpleDoubleProperty(0.0);
-    @Getter
+
     private DoubleProperty juliaX = new SimpleDoubleProperty(0.0);
-    @Getter
+
     private DoubleProperty juliaY = new SimpleDoubleProperty(0.0);
-    @Getter
+
     private DoubleProperty juliaZoom = new SimpleDoubleProperty(0.0);
-    @Getter
+
     private Property<ColourModes> colourMode = new SimpleObjectProperty<>(ColourModes.BLACK_WHITE);
 
     private Property<RenderMode> renderMode = new SimpleObjectProperty<>(RenderMode.LOCAL);
@@ -63,28 +59,22 @@ public class FractalApplication extends Application {
 
     private Property<List<InetSocketAddress>> connections = new SimpleObjectProperty<>(new ArrayList<>(10));
 
-    @Getter
     private DoubleProperty leftHeight = new SimpleDoubleProperty();
-    @Getter
+
     private DoubleProperty leftWidth = new SimpleDoubleProperty();
-    @Getter
+
     private DoubleProperty rightHeight = new SimpleDoubleProperty();
-    @Getter
+
     private DoubleProperty rightWidth = new SimpleDoubleProperty();
 
     private boolean WindowClosed = false;
-    //private RenderingController renderingController;
 
     Service<SimpleImage> mandelbrotRenderService, juliaRenderService;
 
     private void updateSizes() {
-
         if (WindowClosed) {
             return;
         }
-        /*if (ON_DEMAND_RENDERING && renderingController != null)
-            renderingController.stopRendering();*/
-
 
         Bounds leftSize = mainPane.getCellBounds(0, 0);
 
@@ -101,24 +91,16 @@ public class FractalApplication extends Application {
         rightCanvas.resize(rightSize.getWidth(), rightSize.getWidth());
 
         restartServices();
-
-        /*if (ON_DEMAND_RENDERING && renderingController != null)
-        {
-            renderingController.render();
-        }*/
-
     }
 
-    private void restartServices()
-    {
-        if(mandelbrotRenderService != null && mandelbrotRenderService.isRunning())
-        {
+    private void restartServices() {
+        if (mandelbrotRenderService != null && mandelbrotRenderService.isRunning()) {
             mandelbrotRenderService.cancel();
         }
         MandelbrotRenderer mandelbrotRenderer = new MandelbrotRenderer(power.get(), iterations.get(), mandelbrotX.get(),
                 mandelbrotY.get(), mandelbrotZoom.get(), colourMode.getValue(), renderMode.getValue(),
                 tasksPerWorker.get(), connections.getValue(), leftCanvas);
-        mandelbrotRenderer.setBounds((int)leftCanvas.getWidth(), (int)leftCanvas.getHeight());
+        mandelbrotRenderer.setBounds((int) leftCanvas.getWidth(), (int) leftCanvas.getHeight());
         mandelbrotRenderService = new Service<SimpleImage>() {
             @Override
             protected Task<SimpleImage> createTask() {
@@ -129,14 +111,13 @@ public class FractalApplication extends Application {
         mandelbrotRenderService.start();
 
 
-        if(juliaRenderService != null && juliaRenderService.isRunning())
-        {
+        if (juliaRenderService != null && juliaRenderService.isRunning()) {
             juliaRenderService.cancel();
         }
         JuliaRenderer juliaRenderer = new JuliaRenderer(power.get(), iterations.get(), juliaX.get(),
                 juliaY.get(), juliaZoom.get(), colourMode.getValue(), renderMode.getValue(),
                 tasksPerWorker.get(), connections.getValue(), rightCanvas);
-        juliaRenderer.setBounds((int)rightCanvas.getWidth(), (int)rightCanvas.getHeight());
+        juliaRenderer.setBounds((int) rightCanvas.getWidth(), (int) rightCanvas.getHeight());
         juliaRenderService = new Service<SimpleImage>() {
             @Override
             protected Task<SimpleImage> createTask() {
@@ -147,17 +128,15 @@ public class FractalApplication extends Application {
         juliaRenderService.start();
     }
 
-    public void mandelbrotRenderFinished(SimpleImage image)
-    {
-        if(image != null)
+    public void mandelbrotRenderFinished(SimpleImage image) {
+        if (image != null)
             image.copyToCanvas(leftCanvas);
         else //Re-draw on fail?
             updateSizes();
     }
 
-    public void juliaRenderFinished(SimpleImage image)
-    {
-        if(image != null)
+    public void juliaRenderFinished(SimpleImage image) {
+        if (image != null)
             image.copyToCanvas(rightCanvas);
         else //Re-draw on fail?
             updateSizes();
@@ -203,7 +182,6 @@ public class FractalApplication extends Application {
         //mainPane.widthProperty().addListener(observable -> updateSizes());
         //mainPane.heightProperty().addListener(observable -> updateSizes());
 
-
         controlPane = new GridPane();
         //min, preferred, max
         ColumnConstraints controlLabelColConstraint =
@@ -234,10 +212,6 @@ public class FractalApplication extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        /*renderingController = new RenderingController(power, iterations, mandelbrotX,
-                mandelbrotY, mandelbrotZoom, juliaX, juliaY, juliaZoom, colourMode,
-                renderMode, tasksPerWorker, connections, leftCanvas, rightCanvas);*/
-
         Platform.runLater(() -> {
             FractalLogger.logInitializedGUI(mainPane, primaryStage, leftCanvas, rightCanvas);
 
@@ -247,9 +221,6 @@ public class FractalApplication extends Application {
                     iterations, juliaX, juliaY, juliaZoom, colourMode);
 
             updateSizes();
-
-            /*if (!ON_DEMAND_RENDERING)
-                renderingController.startRendering();*/
         });
 
         primaryStage.setOnCloseRequest(this::onWindowClose);
@@ -300,14 +271,12 @@ public class FractalApplication extends Application {
     private void onWindowClose(WindowEvent event) {
         WindowClosed = true;
 
-        if(mandelbrotRenderService != null && mandelbrotRenderService.isRunning())
-        {
+        if (mandelbrotRenderService != null && mandelbrotRenderService.isRunning()) {
             mandelbrotRenderService.cancel();
         }
-        if(juliaRenderService != null && juliaRenderService.isRunning())
-        {
+
+        if (juliaRenderService != null && juliaRenderService.isRunning()) {
             juliaRenderService.cancel();
         }
-        //renderingController.stopRendering();
     }
 }
