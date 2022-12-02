@@ -4,6 +4,8 @@ import at.tugraz.oop2.shared.*;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.*;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
 import javafx.geometry.Bounds;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
@@ -22,7 +24,6 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 
@@ -72,45 +73,98 @@ public class FractalApplication extends Application {
     private DoubleProperty rightWidth = new SimpleDoubleProperty();
 
     private boolean WindowClosed = false;
-    private RenderingController renderingController;
+    //private RenderingController renderingController;
 
-    private ReentrantLock juliaLock;
-    private ReentrantLock mandelbrotLock;
+    Service<SimpleImage> mandelbrotRenderService, juliaRenderService;
 
     private void updateSizes() {
 
         if (WindowClosed) {
             return;
         }
+        /*if (ON_DEMAND_RENDERING && renderingController != null)
+            renderingController.stopRendering();*/
 
-        if (ON_DEMAND_RENDERING && renderingController != null)
-            renderingController.stopRendering();
 
         Bounds leftSize = mainPane.getCellBounds(0, 0);
-        mandelbrotLock.lock();
+
         leftCanvas.widthProperty().set(leftSize.getWidth());
         leftCanvas.heightProperty().set(leftSize.getHeight());
 
         leftCanvas.resize(leftSize.getWidth(), leftSize.getWidth());
-        mandelbrotLock.unlock();
 
-        juliaLock.lock();
         Bounds rightSize = mainPane.getCellBounds(1, 0);
+
         rightCanvas.widthProperty().set(rightSize.getWidth());
         rightCanvas.heightProperty().set(rightSize.getHeight());
 
         rightCanvas.resize(rightSize.getWidth(), rightSize.getWidth());
 
-        juliaLock.unlock();
+        restartServices();
 
-        if (ON_DEMAND_RENDERING && renderingController != null)
+        /*if (ON_DEMAND_RENDERING && renderingController != null)
+        {
             renderingController.render();
+        }*/
+
+    }
+
+    private void restartServices()
+    {
+        if(mandelbrotRenderService != null && mandelbrotRenderService.isRunning())
+        {
+            mandelbrotRenderService.cancel();
+        }
+        MandelbrotRenderer mandelbrotRenderer = new MandelbrotRenderer(power.get(), iterations.get(), mandelbrotX.get(),
+                mandelbrotY.get(), mandelbrotZoom.get(), colourMode.getValue(), renderMode.getValue(),
+                tasksPerWorker.get(), connections.getValue(), leftCanvas);
+        mandelbrotRenderer.setBounds((int)leftCanvas.getWidth(), (int)leftCanvas.getHeight());
+        mandelbrotRenderService = new Service<SimpleImage>() {
+            @Override
+            protected Task<SimpleImage> createTask() {
+                return mandelbrotRenderer.createTask();
+            }
+        };
+        mandelbrotRenderService.setOnSucceeded(e -> mandelbrotRenderFinished(mandelbrotRenderService.getValue()));
+        mandelbrotRenderService.start();
+
+
+        if(juliaRenderService != null && juliaRenderService.isRunning())
+        {
+            juliaRenderService.cancel();
+        }
+        JuliaRenderer juliaRenderer = new JuliaRenderer(power.get(), iterations.get(), juliaX.get(),
+                juliaY.get(), juliaZoom.get(), colourMode.getValue(), renderMode.getValue(),
+                tasksPerWorker.get(), connections.getValue(), rightCanvas);
+        juliaRenderer.setBounds((int)rightCanvas.getWidth(), (int)rightCanvas.getHeight());
+        juliaRenderService = new Service<SimpleImage>() {
+            @Override
+            protected Task<SimpleImage> createTask() {
+                return juliaRenderer.createTask();
+            }
+        };
+        juliaRenderService.setOnSucceeded(e -> juliaRenderFinished(juliaRenderService.getValue()));
+        juliaRenderService.start();
+    }
+
+    public void mandelbrotRenderFinished(SimpleImage image)
+    {
+        if(image != null)
+            image.copyToCanvas(leftCanvas);
+        else //Re-draw on fail?
+            updateSizes();
+    }
+
+    public void juliaRenderFinished(SimpleImage image)
+    {
+        if(image != null)
+            image.copyToCanvas(rightCanvas);
+        else //Re-draw on fail?
+            updateSizes();
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        juliaLock = new ReentrantLock();
-        mandelbrotLock = new ReentrantLock();
 
         mainPane = new GridPane();
 
@@ -180,9 +234,9 @@ public class FractalApplication extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        renderingController = new RenderingController(power, iterations, mandelbrotX,
+        /*renderingController = new RenderingController(power, iterations, mandelbrotX,
                 mandelbrotY, mandelbrotZoom, juliaX, juliaY, juliaZoom, colourMode,
-                renderMode, tasksPerWorker, connections, leftCanvas, rightCanvas, juliaLock, mandelbrotLock);
+                renderMode, tasksPerWorker, connections, leftCanvas, rightCanvas);*/
 
         Platform.runLater(() -> {
             FractalLogger.logInitializedGUI(mainPane, primaryStage, leftCanvas, rightCanvas);
@@ -194,8 +248,8 @@ public class FractalApplication extends Application {
 
             updateSizes();
 
-            if (!ON_DEMAND_RENDERING)
-                renderingController.startRendering();
+            /*if (!ON_DEMAND_RENDERING)
+                renderingController.startRendering();*/
         });
 
         primaryStage.setOnCloseRequest(this::onWindowClose);
@@ -245,6 +299,15 @@ public class FractalApplication extends Application {
 
     private void onWindowClose(WindowEvent event) {
         WindowClosed = true;
-        renderingController.stopRendering();
+
+        if(mandelbrotRenderService != null && mandelbrotRenderService.isRunning())
+        {
+            mandelbrotRenderService.cancel();
+        }
+        if(juliaRenderService != null && juliaRenderService.isRunning())
+        {
+            juliaRenderService.cancel();
+        }
+        //renderingController.stopRendering();
     }
 }
