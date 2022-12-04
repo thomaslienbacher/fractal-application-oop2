@@ -55,7 +55,7 @@ public class FractalApplication extends Application {
     private DoubleProperty juliaZoom = new SimpleDoubleProperty(0.0);
 
     //TODO: default value is BLACK_WHITE !
-    private Property<ColourModes> colourMode = new SimpleObjectProperty<>(ColourModes.COLOUR_FADE);
+    private Property<ColourModes> colourMode = new SimpleObjectProperty<>(ColourModes.BLACK_WHITE);
 
     private Property<RenderMode> renderMode = new SimpleObjectProperty<>(RenderMode.LOCAL);
 
@@ -191,27 +191,140 @@ public class FractalApplication extends Application {
         controlPane.add(new Label("Power"), 0, 1);
         controlPane.add(new Label("Mandelbrot X center"), 0, 2);
         controlPane.add(new Label("Mandelbrot Y center"), 0, 3);
-        controlPane.add(new Label("Julia X center"), 0, 4);
-        controlPane.add(new Label("Julia Y center"), 0, 5);
-        controlPane.add(new Label("ColorMode"), 0, 6); // colour = cringe
-        controlPane.add(new Label("RenderMode"), 0, 7);
-        controlPane.add(new Label("Tasks per Worker"), 0, 8);
-        controlPane.add(new Label("Connection Editor"), 0, 9);
-        controlPane.add(new Label("Connected Workers"), 0, 10);
+        controlPane.add(new Label("Mandelbrot zoom"), 0, 4);
+        controlPane.add(new Label("Julia X center"), 0, 5);
+        controlPane.add(new Label("Julia Y center"), 0, 6);
+        controlPane.add(new Label("Julia zoom"), 0, 7);
+        controlPane.add(new Label("ColorMode"), 0, 8); // colour = cringe
+        controlPane.add(new Label("RenderMode"), 0, 9);
+        controlPane.add(new Label("Tasks per Worker"), 0, 10);
+        controlPane.add(new Label("Connection Editor"), 0, 11);
+        controlPane.add(new Label("Connected Workers"), 0, 12);
 
-        // TODO: connect with properties and check if input is numerical
-        //  and add functionality
-        controlPane.add(new TextField(), 1, 0);
-        controlPane.add(new TextField(), 1, 1);
-        controlPane.add(new TextField(), 1, 2);
-        controlPane.add(new TextField(), 1, 3);
-        controlPane.add(new TextField(), 1, 4);
-        controlPane.add(new TextField(), 1, 5);
-        controlPane.add(new ComboBox<>(FXCollections.observableArrayList(ColourModes.values())), 1, 6);
-        controlPane.add(new ComboBox<>(FXCollections.observableArrayList(RenderMode.values())), 1, 7);
-        controlPane.add(new TextField(), 1, 8);
-        controlPane.add(new Button("Connection Editor"), 1, 9);
-        controlPane.add(new Label("~~~"), 1, 10);
+        TextField iterationsTextField = new TextField(Integer.toString(iterations.get()));
+        iterationsTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            try {
+                if (!Objects.equals(newValue, oldValue)) {
+                    iterations.set(Integer.parseInt(newValue));
+                    restartServices();
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        });
+
+        TextField powerTextField = new TextField(Double.toString(power.get()));
+        powerTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            try {
+                if (!Objects.equals(newValue, oldValue)) {
+                    power.set(Double.parseDouble(newValue));
+                    restartServices();
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        });
+
+        TextField mandelbrotXTextField = new TextField(Double.toString(mandelbrotX.get()));
+        mandelbrotXTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            try {
+                if (!Objects.equals(newValue, oldValue)) {
+                    mandelbrotX.set(Double.parseDouble(newValue));
+                    restartServices();
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        });
+
+        TextField mandelbrotYTextField = new TextField(Double.toString(mandelbrotY.get()));
+        mandelbrotYTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            try {
+                if (!Objects.equals(newValue, oldValue)) {
+                    mandelbrotY.set(Double.parseDouble(newValue));
+                    restartServices();
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        });
+
+        TextField mandelbrotZoomTextField = new TextField(Double.toString(mandelbrotZoom.get()));
+        mandelbrotZoomTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            try {
+                if (!Objects.equals(newValue, oldValue)) {
+                    mandelbrotZoom.set(Double.parseDouble(newValue));
+                    restartServices();
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        });
+
+        TextField juliaXTextField = new TextField(Double.toString(juliaX.get()));
+        juliaXTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            try {
+                if (!Objects.equals(newValue, oldValue)) {
+                    juliaX.set(Double.parseDouble(newValue));
+                    restartServices();
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        });
+
+        TextField juliaYTextField = new TextField(Double.toString(juliaY.get()));
+        juliaYTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            try {
+                if (!Objects.equals(newValue, oldValue)) {
+                    juliaY.set(Double.parseDouble(newValue));
+                    restartServices();
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        });
+
+        TextField juliaZoomTextField = new TextField(Double.toString(juliaZoom.get()));
+        juliaZoomTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            try {
+                if (!Objects.equals(newValue, oldValue)) {
+                    juliaZoom.set(Double.parseDouble(newValue));
+                    restartServices();
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        });
+
+        ComboBox<ColourModes> colourModeField = new ComboBox<>(FXCollections.observableArrayList(ColourModes.values()));
+        colourModeField.getSelectionModel().selectFirst();
+        colourModeField.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
+            colourMode.setValue(newValue);
+            restartServices();
+        });
+
+        ComboBox<RenderMode> renderModeField = new ComboBox<>(FXCollections.observableArrayList(RenderMode.values()));
+        renderModeField.getSelectionModel().selectFirst();
+        renderModeField.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
+            renderMode.setValue(newValue);
+        });
+
+        TextField tasksPerWorkerTextField = new TextField(Integer.toString(tasksPerWorker.get()));
+        tasksPerWorkerTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            try {
+                if (!Objects.equals(newValue, oldValue)) {
+                    tasksPerWorker.set(Integer.parseInt(newValue));
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        });
+
+        controlPane.add(iterationsTextField, 1, 0);
+        controlPane.add(powerTextField, 1, 1);
+        controlPane.add(mandelbrotXTextField, 1, 2);
+        controlPane.add(mandelbrotYTextField, 1, 3);
+        controlPane.add(mandelbrotZoomTextField, 1, 4);
+        controlPane.add(juliaXTextField, 1, 5);
+        controlPane.add(juliaYTextField, 1, 6);
+        controlPane.add(juliaZoomTextField, 1, 7);
+        controlPane.add(colourModeField, 1, 8);
+        controlPane.add(renderModeField, 1, 9);
+        controlPane.add(tasksPerWorkerTextField, 1, 10);
+        controlPane.add(new Button("Connection Editor"), 1, 11);
+        controlPane.add(new Label("~~~"), 1, 12);
 
         //min, preferred, max
         ColumnConstraints controlLabelColConstraint =
