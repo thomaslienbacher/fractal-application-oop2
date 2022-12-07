@@ -150,6 +150,7 @@ public class FractalApplication extends Application {
     public void start(Stage primaryStage) {
         mainPane = new GridPane();
 
+        parseArguments();
         leftCanvas = new Canvas();
         leftCanvas.setCursor(Cursor.HAND);
 
@@ -290,7 +291,7 @@ public class FractalApplication extends Application {
         });
 
         ComboBox<ColourModes> colourModeField = new ComboBox<>(FXCollections.observableArrayList(ColourModes.values()));
-        colourModeField.getSelectionModel().selectFirst();
+        colourModeField.getSelectionModel().select(colourMode.getValue());
         colourModeField.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
             colourMode.setValue(newValue);
             restartServices();
@@ -357,7 +358,6 @@ public class FractalApplication extends Application {
         Platform.runLater(() -> {
             FractalLogger.logInitializedGUI(mainPane, primaryStage, leftCanvas, rightCanvas);
 
-            parseArguments();
 
             FractalLogger.logArgumentsGUI(mandelbrotX, mandelbrotY, mandelbrotZoom, power,
                     iterations, juliaX, juliaY, juliaZoom, colourMode);
