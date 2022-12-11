@@ -7,6 +7,7 @@ import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.event.EventHandler;
@@ -16,24 +17,21 @@ import javafx.geometry.VPos;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.input.ZoomEvent;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.RowConstraints;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 
 public class FractalApplication extends Application {
@@ -67,6 +65,9 @@ public class FractalApplication extends Application {
     private IntegerProperty tasksPerWorker = new SimpleIntegerProperty(5);
 
     private Property<List<InetSocketAddress>> connections = new SimpleObjectProperty<>(new ArrayList<>(10));
+
+    private ListView<InetSocketAddress> connectionsListView = new ListView<>();
+
 
     private DoubleProperty leftHeight = new SimpleDoubleProperty();
 
@@ -160,6 +161,14 @@ public class FractalApplication extends Application {
         mainPane = new GridPane();
 
         parseArguments();
+
+        if (connections.getValue().isEmpty()) {
+            InetSocketAddress newConnection = new InetSocketAddress("localhost", 8010);
+            var currentConnections = connections.getValue();
+            currentConnections.add(newConnection);
+            connections.setValue(currentConnections);
+        }
+
         leftCanvas = new Canvas();
         leftCanvas.setCursor(Cursor.HAND);
 
@@ -446,6 +455,10 @@ public class FractalApplication extends Application {
             }
         });
 
+        var connectionsButton = new Button("Connection Editor");
+
+        connectionsButton.setOnAction(event -> showConnectionsWindow());
+
         controlPane.add(iterationsTextField, 1, 0);
         controlPane.add(powerTextField, 1, 1);
         controlPane.add(mandelbrotXTextField, 1, 2);
@@ -457,7 +470,7 @@ public class FractalApplication extends Application {
         controlPane.add(colourModeField, 1, 8);
         controlPane.add(renderModeField, 1, 9);
         controlPane.add(tasksPerWorkerTextField, 1, 10);
-        controlPane.add(new Button("Connection Editor"), 1, 11);
+        controlPane.add(connectionsButton, 1, 11);
         controlPane.add(new Label("~~~"), 1, 12);
 
         //min, preferred, max
@@ -537,6 +550,25 @@ public class FractalApplication extends Application {
                         colourMode.setValue(ColourModes.COLOUR_FADE);
                     }
                     break;
+
+                case "--tasksperworker":
+                    tasksPerWorker.set(Integer.parseInt(param.split("=")[1]));
+                    break;
+                case "--rendermode":
+                    if (Objects.equals(param.split("=")[1], RenderMode.LOCAL.name())) {
+                        renderMode.setValue(RenderMode.LOCAL);
+                    } else if (Objects.equals(param.split("=")[1], RenderMode.DISTRIBUTED.name())) {
+                        renderMode.setValue(RenderMode.DISTRIBUTED);
+                    }
+                    break;
+                case "--connection":
+                    for (String connection : param.split("=")[1].split(",")) {
+                        InetSocketAddress newConnection = new InetSocketAddress(connection.split(":")[0], Integer.parseInt(connection.split(":")[1]));
+                        var currentConnections = connections.getValue();
+                        currentConnections.add(newConnection);
+                        connections.setValue(currentConnections);
+                    }
+                    break;
                 default:
                     break;
             }
@@ -552,6 +584,108 @@ public class FractalApplication extends Application {
 
         if (juliaRenderService != null && juliaRenderService.isRunning()) {
             juliaRenderService.cancel();
+        }
+    }
+
+    public void showConnectionsWindow() {
+        Stage connectionsWindow = new Stage();
+        connectionsWindow.setTitle("Connections");
+
+        ListView<InetSocketAddress> connectionsListView = new ListView<>();
+        ObservableList<InetSocketAddress> inetSocketAddressObservableList = FXCollections.observableArrayList(connections.getValue());
+        connectionsListView.setItems(inetSocketAddressObservableList);
+
+        Button addButton = new Button("Add");
+        addButton.setOnAction(event -> addConnection());
+
+        Button deleteButton = new Button("Delete");
+        deleteButton.setOnAction(event -> deleteSelectedConnection(connectionsListView));
+
+        Button changeButton = new Button("Change");
+        changeButton.setOnAction(event -> changeSelectedConnection(connectionsListView));
+
+        Button testButton = new Button("Test Connection");
+        testButton.setOnAction(event -> {
+            InetSocketAddress selectedConnection = connectionsListView.getSelectionModel().getSelectedItem();
+            if (selectedConnection != null){
+                try(Socket socket= new Socket()) {
+                    socket.connect(selectedConnection);
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Connection Test");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Connection successful!");
+                    alert.showAndWait();
+                } catch (IOException e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Connection Test");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Connection failed!");
+                    alert.showAndWait();
+                }
+            }
+        });
+
+        HBox buttonBox = new HBox(addButton, deleteButton, changeButton, testButton);
+
+        BorderPane root = new BorderPane();
+        root.setCenter(connectionsListView);
+        root.setBottom(buttonBox);
+
+        Scene scene = new Scene(root, 400, 600);
+        connectionsWindow.setScene(scene);
+        connectionsWindow.show();
+    }
+
+    public void addConnection() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Add Connection");
+        dialog.setHeaderText("Enter the host string and port for the new connection");
+        dialog.setContentText("<Host>:<Port>");
+
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            String[] hostPort = result.get().split(":");
+            String host = hostPort[0];
+            int port = Integer.parseInt(hostPort[1]);
+
+            List<InetSocketAddress> connectionsList = connections.getValue();
+            connectionsList.add(new InetSocketAddress(host, port));
+            connections.setValue(connectionsList);
+            connectionsListView.setItems(FXCollections.observableArrayList(connections.getValue()));
+        }
+    }
+
+    public void deleteSelectedConnection(ListView<InetSocketAddress> connectionsListView) {
+        InetSocketAddress selectedConnection = connectionsListView.getSelectionModel().getSelectedItem();
+        if (selectedConnection != null) {
+            List<InetSocketAddress> connectionsList = connections.getValue();
+            connectionsList.remove(selectedConnection);
+            connections.setValue(connectionsList);
+            connectionsListView.setItems(FXCollections.observableArrayList(connections.getValue()));
+        }
+    }
+
+    public void changeSelectedConnection(ListView<InetSocketAddress> connectionsListView) {
+        InetSocketAddress selectedConnection = connectionsListView.getSelectionModel().getSelectedItem();
+        if (selectedConnection != null) {
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Change selected Connection");
+            dialog.setHeaderText("Enter the host string and port for the changed connection");
+            dialog.setContentText("<Host>:<Port>");
+
+            Optional<String> result = dialog.showAndWait();
+            if (result.isPresent()) {
+                String[] hostPort = result.get().split(":");
+                String host = hostPort[0];
+                int port = Integer.parseInt(hostPort[1]);
+
+                List<InetSocketAddress> connectionsList = connections.getValue();
+                connectionsList.remove(selectedConnection);
+
+                connectionsList.add(new InetSocketAddress(host, port));
+                connections.setValue(connectionsList);
+                connectionsListView.setItems(FXCollections.observableArrayList(connections.getValue()));
+            }
         }
     }
 }
