@@ -4,9 +4,12 @@ import at.tugraz.oop2.shared.*;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.*;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
+import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
@@ -17,6 +20,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
+import javafx.scene.input.ZoomEvent;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -26,7 +32,6 @@ import javafx.stage.WindowEvent;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -72,6 +77,10 @@ public class FractalApplication extends Application {
     private DoubleProperty rightWidth = new SimpleDoubleProperty();
 
     private boolean windowClosed = false;
+    double previousMandelbrotX = 0;
+    double previousMandelbrotY = 0;
+    double previousJuliaX = 0;
+    double previousJuliaY = 0;
 
     Service<SimpleImage> mandelbrotRenderService, juliaRenderService;
 
@@ -154,12 +163,93 @@ public class FractalApplication extends Application {
         leftCanvas = new Canvas();
         leftCanvas.setCursor(Cursor.HAND);
 
+
+        leftCanvas.setOnMouseDragged(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                double x = event.getX();
+                double y = event.getY();
+
+                double deltaX = x - previousMandelbrotX;
+                double deltaY = y - previousMandelbrotY;
+
+                // update the previous coordinates for the next drag event
+                previousMandelbrotX = x;
+                previousMandelbrotY = y;
+
+                if (deltaX > 0) {
+                    mandelbrotX.setValue(mandelbrotX.getValue()-0.07);;
+                } else if (deltaX < 0) {
+                    mandelbrotX.setValue(mandelbrotX.getValue()+0.07);
+                }
+
+                if (deltaY > 0) {
+                    mandelbrotY.setValue(mandelbrotY.getValue()-0.11);
+                } else if (deltaY < 0) {
+                    mandelbrotY.setValue(mandelbrotY.getValue()+0.11);
+                }
+                restartServices();
+            }
+        });
+
+        leftCanvas.setOnScroll(new EventHandler<ScrollEvent>() {
+            @Override
+            public void handle(ScrollEvent event) {
+                if (event.getDeltaY() > 0) {
+                    mandelbrotZoom.setValue(mandelbrotZoom.getValue() + 0.02);
+                } else if (event.getDeltaY() < 0) {
+                    mandelbrotZoom.setValue(mandelbrotZoom.getValue() - 0.02);
+                }
+                restartServices();
+            }
+        });
+
+
+
         mainPane.setGridLinesVisible(true);
         mainPane.add(leftCanvas, 0, 0);
 
         rightCanvas = new Canvas();
         rightCanvas.setCursor(Cursor.HAND);
+        rightCanvas.setOnMouseDragged(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                double x = event.getX();
+                double y = event.getY();
 
+                double deltaX = x - previousJuliaX;
+                double deltaY = y - previousJuliaY;
+
+                // update the previous coordinates for the next drag event
+                previousJuliaX = x;
+                previousJuliaY = y;
+
+                if (deltaX > 0) {
+                    juliaX.setValue(juliaX.getValue()-0.07);;
+                } else if (deltaX < 0) {
+                    juliaX.setValue(juliaX.getValue()+0.07);
+                }
+
+                if (deltaY > 0) {
+                    juliaY.setValue(juliaY.getValue()-0.11);
+                } else if (deltaY < 0) {
+                    juliaY.setValue(juliaY.getValue()+0.11);
+                }
+                restartServices();
+            }
+        });
+
+        rightCanvas.setOnScroll(new EventHandler<ScrollEvent>() {
+            @Override
+            public void handle(ScrollEvent event) {
+                if (event.getDeltaY() > 0) {
+                    juliaZoom.setValue(juliaZoom.getValue() + 0.02);
+                } else if (event.getDeltaY() < 0) {
+                    juliaZoom.setValue(juliaZoom.getValue() - 0.02);
+                }
+                restartServices();
+            }
+        });
         mainPane.add(rightCanvas, 1, 0);
 
         ColumnConstraints cc1 =
@@ -310,6 +400,50 @@ public class FractalApplication extends Application {
                     tasksPerWorker.set(Integer.parseInt(newValue));
                 }
             } catch (NumberFormatException ignored) {
+            }
+        });
+
+
+        mandelbrotX.addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                // update the text of the text field with the new value of the zoom property
+                mandelbrotXTextField.setText(String.format("%.2f", newValue));
+            }
+        });
+        mandelbrotY.addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                // update the text of the text field with the new value of the zoom property
+                mandelbrotYTextField.setText(String.format("%.2f", newValue));
+            }
+        });
+        mandelbrotZoom.addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                // update the text of the text field with the new value of the zoom property
+                mandelbrotZoomTextField.setText(String.format("%.2f", newValue));
+            }
+        });
+        juliaX.addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                // update the text of the text field with the new value of the zoom property
+                juliaXTextField.setText(String.format("Zoom: %.2f", newValue));
+            }
+        });
+        juliaY.addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                // update the text of the text field with the new value of the zoom property
+                juliaYTextField.setText(String.format("%.2f", newValue));
+            }
+        });
+        juliaZoom.addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                // update the text of the text field with the new value of the zoom property
+                juliaZoomTextField.setText(String.format("%.2f", newValue));
             }
         });
 

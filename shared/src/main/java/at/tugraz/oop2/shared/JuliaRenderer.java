@@ -138,6 +138,7 @@ public class JuliaRenderer extends Service<SimpleImage> {
 
             //TODO change constantX and constantY
             // maybe we should add new properties for these ??
+            //TODO param linking
             double constantX = Math.random() - 0.5;
             double constantY = Math.random() - 0.5;
 
