@@ -178,15 +178,15 @@ public class FractalApplication extends Application {
                 previousMandelbrotY = y;
 
                 if (deltaX > 0) {
-                    mandelbrotX.setValue(mandelbrotX.getValue()-0.07);;
+                    mandelbrotX.setValue(mandelbrotX.getValue() - 0.07);
                 } else if (deltaX < 0) {
-                    mandelbrotX.setValue(mandelbrotX.getValue()+0.07);
+                    mandelbrotX.setValue(mandelbrotX.getValue() + 0.07);
                 }
 
                 if (deltaY > 0) {
-                    mandelbrotY.setValue(mandelbrotY.getValue()-0.11);
+                    mandelbrotY.setValue(mandelbrotY.getValue() - 0.11);
                 } else if (deltaY < 0) {
-                    mandelbrotY.setValue(mandelbrotY.getValue()+0.11);
+                    mandelbrotY.setValue(mandelbrotY.getValue() + 0.11);
                 }
                 restartServices();
             }
@@ -203,7 +203,6 @@ public class FractalApplication extends Application {
                 restartServices();
             }
         });
-
 
 
         mainPane.setGridLinesVisible(true);
@@ -225,15 +224,15 @@ public class FractalApplication extends Application {
                 previousJuliaY = y;
 
                 if (deltaX > 0) {
-                    juliaX.setValue(juliaX.getValue()-0.07);;
+                    juliaX.setValue(juliaX.getValue() - 0.07);
                 } else if (deltaX < 0) {
-                    juliaX.setValue(juliaX.getValue()+0.07);
+                    juliaX.setValue(juliaX.getValue() + 0.07);
                 }
 
                 if (deltaY > 0) {
-                    juliaY.setValue(juliaY.getValue()-0.11);
+                    juliaY.setValue(juliaY.getValue() - 0.11);
                 } else if (deltaY < 0) {
-                    juliaY.setValue(juliaY.getValue()+0.11);
+                    juliaY.setValue(juliaY.getValue() + 0.11);
                 }
                 restartServices();
             }
