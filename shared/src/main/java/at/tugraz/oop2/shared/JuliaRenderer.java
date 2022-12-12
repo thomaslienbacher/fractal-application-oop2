@@ -17,6 +17,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class JuliaRenderer extends Service<SimpleImage> {
 
+    private static final boolean DEBUG_PRINT = false;
+
     static class JuliaTask implements Callable<SimpleImage> {
 
         JuliaRenderOptions options;
@@ -31,15 +33,19 @@ public class JuliaRenderer extends Service<SimpleImage> {
             this.colourMode = colourMode;
             this.options = options;
             this.transform = new SpaceTransform(options.width, options.height, options.zoom, options.centerX, options.centerY);
-            System.out.printf("|%04x| %s\n", renderId, transform);
+
+            if (DEBUG_PRINT) {
+                System.out.printf("|%04x| %s\n", renderId, transform);
+            }
         }
 
         @Override
         public SimpleImage call() throws InvalidDepthException {
             var img = new SimpleImage(options.width, getImageHeight());
 
-            System.out.printf("|%04x| [%d] %3d (total %3d) %s\n",
-                    this.renderId, options.fragmentNumber, getImageHeight(), options.height, options);
+            if (DEBUG_PRINT) {
+                System.out.printf("|%04x| [%d] %3d (total %3d) %s\n", this.renderId, options.fragmentNumber, getImageHeight(), options.height, options);
+            }
 
             for (int y = 0; y < getImageHeight(); y++) {
                 for (int x = 0; x < options.width; x++) {
@@ -132,7 +138,11 @@ public class JuliaRenderer extends Service<SimpleImage> {
     private SimpleImage renderLocal() {
         // this function is almost the same as in MandelbrotRenderer, maybe some deduplication would be good
         int renderId = (int) (Math.random() * Short.MAX_VALUE);
-        System.out.printf("Rendering Julia locally |%04x|\n", renderId);
+
+        if (DEBUG_PRINT) {
+            System.out.printf("Rendering Julia locally |%04x|\n", renderId);
+        }
+
         ExecutorService executor = null;
         try {
             // lets utilize all the power
@@ -143,8 +153,7 @@ public class JuliaRenderer extends Service<SimpleImage> {
             var tasks = new ArrayList<JuliaTask>();
 
             for (int i = 0; i < nTasks; i++) {
-                var opts = new JuliaRenderOptions(x, y, width, height, zoom, power, iterations,
-                        constantX, constantY, colourMode, i, nTasks, renderMode);
+                var opts = new JuliaRenderOptions(x, y, width, height, zoom, power, iterations, constantX, constantY, colourMode, i, nTasks, renderMode);
                 tasks.add(new JuliaRenderer.JuliaTask(renderId, colourMode, opts));
             }
 
@@ -166,8 +175,7 @@ public class JuliaRenderer extends Service<SimpleImage> {
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
-            if (executor != null)
-                executor.shutdown();
+            if (executor != null) executor.shutdown();
         }
         return null;
     }
