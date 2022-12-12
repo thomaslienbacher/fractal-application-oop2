@@ -32,14 +32,13 @@ public enum ColourModes {
     }
 
     private short[] colorInterpolatedRedBlue(int iterationsHeld, int maxIterations) {
-        //TODO: FIX this doesnt produce the results seen in the example screenshots
         if (iterationsHeld == -1) {
             return new short[]{0, 0, 0};
         }
 
         double s = (double) iterationsHeld / (double) maxIterations;
-        short r = MathUtils.interpolate((short) 255, (short) 0, s);
-        short b = MathUtils.interpolate((short) 0, (short) 255, s);
-        return new short[]{r, b, b};
+        short r = MathUtils.interpolate((short) 0, (short) 255, s);
+        short b = MathUtils.interpolate((short) 255, (short) 0, s);
+        return new short[]{r, 0, b};
     }
 }
