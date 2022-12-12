@@ -1,6 +1,7 @@
 package at.tugraz.oop2.gui;
 
 import at.tugraz.oop2.shared.*;
+import com.sun.prism.shader.FillCircle_RadialGradient_PAD_AlphaTest_Loader;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.*;
@@ -57,7 +58,6 @@ public class FractalApplication extends Application {
 
     private DoubleProperty juliaZoom = new SimpleDoubleProperty(0.0);
 
-    //TODO: default value is BLACK_WHITE !
     private Property<ColourModes> colourMode = new SimpleObjectProperty<>(ColourModes.BLACK_WHITE);
 
     private Property<RenderMode> renderMode = new SimpleObjectProperty<>(RenderMode.LOCAL);
@@ -108,14 +108,14 @@ public class FractalApplication extends Application {
     }
 
     private void restartServices() {
-        if (mandelbrotRenderService != null && mandelbrotRenderService.isRunning()) {
+        if (mandelbrotRenderService != null) {
             mandelbrotRenderService.cancel();
         }
         MandelbrotRenderer mandelbrotRenderer = new MandelbrotRenderer(power.get(), iterations.get(), mandelbrotX.get(),
                 mandelbrotY.get(), mandelbrotZoom.get(), colourMode.getValue(), renderMode.getValue(),
                 tasksPerWorker.get(), connections.getValue(), leftCanvas);
         mandelbrotRenderer.setBounds((int) leftCanvas.getWidth(), (int) leftCanvas.getHeight());
-        mandelbrotRenderService = new Service<SimpleImage>() {
+        mandelbrotRenderService = new Service<>() {
             @Override
             protected Task<SimpleImage> createTask() {
                 return mandelbrotRenderer.createTask();
@@ -124,15 +124,16 @@ public class FractalApplication extends Application {
         mandelbrotRenderService.setOnSucceeded(e -> mandelbrotRenderFinished(mandelbrotRenderService.getValue()));
         mandelbrotRenderService.start();
 
+        //TODO: where to FractalLogger.logRenderCallGUI
 
-        if (juliaRenderService != null && juliaRenderService.isRunning()) {
+        if (juliaRenderService != null) {
             juliaRenderService.cancel();
         }
         JuliaRenderer juliaRenderer = new JuliaRenderer(power.get(), iterations.get(), juliaX.get(),
                 juliaY.get(), juliaZoom.get(), mandelbrotX.get(), mandelbrotY.get(), colourMode.getValue(), renderMode.getValue(),
                 tasksPerWorker.get(), connections.getValue(), rightCanvas);
         juliaRenderer.setBounds((int) rightCanvas.getWidth(), (int) rightCanvas.getHeight());
-        juliaRenderService = new Service<SimpleImage>() {
+        juliaRenderService = new Service<>() {
             @Override
             protected Task<SimpleImage> createTask() {
                 return juliaRenderer.createTask();
@@ -143,16 +144,20 @@ public class FractalApplication extends Application {
     }
 
     public void mandelbrotRenderFinished(SimpleImage image) {
-        if (image != null)
+        if (image != null) {
+            FractalLogger.logRenderFinishedGUI(FractalType.MANDELBROT, image);
             image.copyToCanvas(leftCanvas);
-        else //Re-draw on fail?
+            FractalLogger.logDrawDoneGUI(FractalType.MANDELBROT);
+        } else //Re-draw on fail?
             updateSizes();
     }
 
     public void juliaRenderFinished(SimpleImage image) {
-        if (image != null)
+        if (image != null) {
+            FractalLogger.logRenderFinishedGUI(FractalType.JULIA, image);
             image.copyToCanvas(rightCanvas);
-        else //Re-draw on fail?
+            FractalLogger.logDrawDoneGUI(FractalType.JULIA);
+        } else //Re-draw on fail?
             updateSizes();
     }
 
@@ -219,6 +224,8 @@ public class FractalApplication extends Application {
 
         rightCanvas = new Canvas();
         rightCanvas.setCursor(Cursor.HAND);
+
+        // TODO: replace with lambdas
         rightCanvas.setOnMouseDragged(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
@@ -412,6 +419,7 @@ public class FractalApplication extends Application {
         });
 
 
+        //TODO: change listeners to lambdas
         mandelbrotX.addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
@@ -512,6 +520,14 @@ public class FractalApplication extends Application {
         });
 
         primaryStage.setOnCloseRequest(this::onWindowClose);
+        primaryStage.maximizedProperty().addListener((a, b, c) -> {
+            System.out.println(mainPane.getCellBounds(0, 0));
+            System.out.println(mainPane.getCellBounds(1, 0));
+            updateSizes();
+            System.out.println("Maximized changed");
+            System.out.println(mainPane.getCellBounds(0, 0));
+            System.out.println(mainPane.getCellBounds(1, 0));
+        });
     }
 
     void parseArguments() {
@@ -578,11 +594,11 @@ public class FractalApplication extends Application {
     private void onWindowClose(WindowEvent event) {
         windowClosed = true;
 
-        if (mandelbrotRenderService != null && mandelbrotRenderService.isRunning()) {
+        if (mandelbrotRenderService != null) {
             mandelbrotRenderService.cancel();
         }
 
-        if (juliaRenderService != null && juliaRenderService.isRunning()) {
+        if (juliaRenderService != null) {
             juliaRenderService.cancel();
         }
     }
