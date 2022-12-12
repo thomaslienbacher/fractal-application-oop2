@@ -95,12 +95,18 @@ public class JuliaRenderer extends Service<SimpleImage> {
     List<InetSocketAddress> connections;
     int width, height;
 
-    public JuliaRenderer(double power, int iterations, double x, double y, double zoom, ColourModes colourMode, RenderMode renderMode, int tasksPerWorker, List<InetSocketAddress> connections, Canvas canvas) {
+    double constantX;
+
+    double constantY;
+
+    public JuliaRenderer(double power, int iterations, double x, double y, double zoom, double constantX, double constantY, ColourModes colourMode, RenderMode renderMode, int tasksPerWorker, List<InetSocketAddress> connections, Canvas canvas) {
         this.power = power;
         this.iterations = iterations;
         this.x = x;
         this.y = y;
         this.zoom = zoom;
+        this.constantX = constantX;
+        this.constantY = constantY;
         this.colourMode = colourMode;
         this.renderMode = renderMode;
         this.tasksPerWorker = tasksPerWorker;
@@ -135,12 +141,6 @@ public class JuliaRenderer extends Service<SimpleImage> {
 
             int nTasks = nproc;
             var tasks = new ArrayList<JuliaTask>();
-
-            //TODO change constantX and constantY
-            // maybe we should add new properties for these ??
-            //TODO param linking
-            double constantX = Math.random() - 0.5;
-            double constantY = Math.random() - 0.5;
 
             for (int i = 0; i < nTasks; i++) {
                 var opts = new JuliaRenderOptions(x, y, width, height, zoom, power, iterations,

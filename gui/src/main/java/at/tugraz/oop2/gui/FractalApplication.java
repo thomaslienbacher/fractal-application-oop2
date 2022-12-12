@@ -129,7 +129,7 @@ public class FractalApplication extends Application {
             juliaRenderService.cancel();
         }
         JuliaRenderer juliaRenderer = new JuliaRenderer(power.get(), iterations.get(), juliaX.get(),
-                juliaY.get(), juliaZoom.get(), colourMode.getValue(), renderMode.getValue(),
+                juliaY.get(), juliaZoom.get(), mandelbrotX.get(), mandelbrotY.get(), colourMode.getValue(), renderMode.getValue(),
                 tasksPerWorker.get(), connections.getValue(), rightCanvas);
         juliaRenderer.setBounds((int) rightCanvas.getWidth(), (int) rightCanvas.getHeight());
         juliaRenderService = new Service<SimpleImage>() {
@@ -437,7 +437,7 @@ public class FractalApplication extends Application {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 // update the text of the text field with the new value of the zoom property
-                juliaXTextField.setText(String.format("Zoom: %.2f", newValue));
+                juliaXTextField.setText(String.format("%.2f", newValue));
             }
         });
         juliaY.addListener(new ChangeListener<Number>() {
@@ -607,8 +607,8 @@ public class FractalApplication extends Application {
         Button testButton = new Button("Test Connection");
         testButton.setOnAction(event -> {
             InetSocketAddress selectedConnection = connectionsListView.getSelectionModel().getSelectedItem();
-            if (selectedConnection != null){
-                try(Socket socket= new Socket()) {
+            if (selectedConnection != null) {
+                try (Socket socket = new Socket()) {
                     socket.connect(selectedConnection);
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("Connection Test");
