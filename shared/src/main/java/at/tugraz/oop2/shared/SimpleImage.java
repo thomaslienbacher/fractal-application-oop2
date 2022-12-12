@@ -5,7 +5,6 @@ import javafx.scene.canvas.Canvas;
 import lombok.Getter;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.List;
 
 public class SimpleImage implements Serializable {

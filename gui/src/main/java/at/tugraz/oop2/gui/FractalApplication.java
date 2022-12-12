@@ -1,7 +1,6 @@
 package at.tugraz.oop2.gui;
 
 import at.tugraz.oop2.shared.*;
-import com.sun.prism.shader.FillCircle_RadialGradient_PAD_AlphaTest_Loader;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.*;
@@ -11,17 +10,20 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
 import javafx.geometry.HPos;
+import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.MouseDragEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.input.ZoomEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -124,7 +126,7 @@ public class FractalApplication extends Application {
         mandelbrotRenderService.setOnSucceeded(e -> mandelbrotRenderFinished(mandelbrotRenderService.getValue()));
         mandelbrotRenderService.start();
 
-        //TODO: where to FractalLogger.logRenderCallGUI
+        //TODO: where to call FractalLogger.logRenderCallGUI
 
         if (juliaRenderService != null) {
             juliaRenderService.cancel();
@@ -148,6 +150,14 @@ public class FractalApplication extends Application {
             FractalLogger.logRenderFinishedGUI(FractalType.MANDELBROT, image);
             image.copyToCanvas(leftCanvas);
             FractalLogger.logDrawDoneGUI(FractalType.MANDELBROT);
+
+            var pane = mainPane.getCellBounds(0, 0);
+            if (image.getWidth() < pane.getWidth()) {
+                updateSizes();
+            }
+            if (image.getHeight() < pane.getHeight()) {
+                updateSizes();
+            }
         } else //Re-draw on fail?
             updateSizes();
     }
@@ -157,6 +167,14 @@ public class FractalApplication extends Application {
             FractalLogger.logRenderFinishedGUI(FractalType.JULIA, image);
             image.copyToCanvas(rightCanvas);
             FractalLogger.logDrawDoneGUI(FractalType.JULIA);
+
+            var pane = mainPane.getCellBounds(0, 0);
+            if (image.getWidth() < pane.getWidth()) {
+                updateSizes();
+            }
+            if (image.getHeight() < pane.getHeight()) {
+                updateSizes();
+            }
         } else //Re-draw on fail?
             updateSizes();
     }
@@ -177,33 +195,27 @@ public class FractalApplication extends Application {
         leftCanvas = new Canvas();
         leftCanvas.setCursor(Cursor.HAND);
 
+        // reset drag start position
+        leftCanvas.setOnMousePressed(mouseEvent -> {
+            previousMandelbrotX = mouseEvent.getX();
+            previousMandelbrotY = mouseEvent.getY();
+        });
 
-        leftCanvas.setOnMouseDragged(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                double x = event.getX();
-                double y = event.getY();
+        leftCanvas.setOnMouseReleased(mouseEvent -> {
+            var x = mouseEvent.getX();
+            var y = mouseEvent.getY();
+            var dx = x - previousMandelbrotX;
+            var dy = y - previousMandelbrotY;
 
-                double deltaX = x - previousMandelbrotX;
-                double deltaY = y - previousMandelbrotY;
+            var transform = new SpaceTransform(leftWidth.intValue(), leftHeight.intValue(),
+                    mandelbrotZoom.get(), mandelbrotX.get(), mandelbrotY.get());
 
-                // update the previous coordinates for the next drag event
-                previousMandelbrotX = x;
-                previousMandelbrotY = y;
+            var transX = transform.dragDistanceX(dx);
+            var transY = transform.dragDistanceY(dy);
 
-                if (deltaX > 0) {
-                    mandelbrotX.setValue(mandelbrotX.getValue() - 0.07);
-                } else if (deltaX < 0) {
-                    mandelbrotX.setValue(mandelbrotX.getValue() + 0.07);
-                }
-
-                if (deltaY > 0) {
-                    mandelbrotY.setValue(mandelbrotY.getValue() - 0.11);
-                } else if (deltaY < 0) {
-                    mandelbrotY.setValue(mandelbrotY.getValue() + 0.11);
-                }
-                restartServices();
-            }
+            // use minus because we move camera
+            mandelbrotX.setValue(mandelbrotX.getValue() - transX);
+            mandelbrotY.setValue(mandelbrotY.getValue() - transY);
         });
 
         leftCanvas.setOnScroll(new EventHandler<ScrollEvent>() {
@@ -218,53 +230,34 @@ public class FractalApplication extends Application {
             }
         });
 
-
         mainPane.setGridLinesVisible(true);
         mainPane.add(leftCanvas, 0, 0);
 
         rightCanvas = new Canvas();
         rightCanvas.setCursor(Cursor.HAND);
 
-        // TODO: replace with lambdas
-        rightCanvas.setOnMouseDragged(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                double x = event.getX();
-                double y = event.getY();
-
-                double deltaX = x - previousJuliaX;
-                double deltaY = y - previousJuliaY;
-
-                // update the previous coordinates for the next drag event
-                previousJuliaX = x;
-                previousJuliaY = y;
-
-                if (deltaX > 0) {
-                    juliaX.setValue(juliaX.getValue() - 0.07);
-                } else if (deltaX < 0) {
-                    juliaX.setValue(juliaX.getValue() + 0.07);
-                }
-
-                if (deltaY > 0) {
-                    juliaY.setValue(juliaY.getValue() - 0.11);
-                } else if (deltaY < 0) {
-                    juliaY.setValue(juliaY.getValue() + 0.11);
-                }
-                restartServices();
-            }
+        rightCanvas.setOnMousePressed(mouseEvent -> {
+            previousJuliaX = mouseEvent.getX();
+            previousJuliaY = mouseEvent.getY();
         });
 
-        rightCanvas.setOnScroll(new EventHandler<ScrollEvent>() {
-            @Override
-            public void handle(ScrollEvent event) {
-                if (event.getDeltaY() > 0) {
-                    juliaZoom.setValue(juliaZoom.getValue() + 0.02);
-                } else if (event.getDeltaY() < 0) {
-                    juliaZoom.setValue(juliaZoom.getValue() - 0.02);
-                }
-                restartServices();
-            }
+        rightCanvas.setOnMouseReleased(mouseEvent -> {
+            var x = mouseEvent.getX();
+            var y = mouseEvent.getY();
+            var dx = x - previousJuliaX;
+            var dy = y - previousJuliaY;
+
+            var transform = new SpaceTransform(rightWidth.intValue(), rightHeight.intValue(),
+                    juliaZoom.get(), juliaX.get(), juliaY.get());
+
+            var transX = transform.dragDistanceX(dx);
+            var transY = transform.dragDistanceY(dy);
+
+            // use minus because we move camera
+            juliaX.setValue(juliaX.getValue() - transX);
+            juliaY.setValue(juliaY.getValue() - transY);
         });
+
         mainPane.add(rightCanvas, 1, 0);
 
         ColumnConstraints cc1 =
@@ -420,6 +413,7 @@ public class FractalApplication extends Application {
 
 
         //TODO: change listeners to lambdas
+        //TODO: only update when not focused and remove discrete formatting
         mandelbrotX.addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
@@ -520,14 +514,6 @@ public class FractalApplication extends Application {
         });
 
         primaryStage.setOnCloseRequest(this::onWindowClose);
-        primaryStage.maximizedProperty().addListener((a, b, c) -> {
-            System.out.println(mainPane.getCellBounds(0, 0));
-            System.out.println(mainPane.getCellBounds(1, 0));
-            updateSizes();
-            System.out.println("Maximized changed");
-            System.out.println(mainPane.getCellBounds(0, 0));
-            System.out.println(mainPane.getCellBounds(1, 0));
-        });
     }
 
     void parseArguments() {
@@ -642,6 +628,7 @@ public class FractalApplication extends Application {
         });
 
         HBox buttonBox = new HBox(addButton, deleteButton, changeButton, testButton);
+        buttonBox.setSpacing(4.0);
 
         BorderPane root = new BorderPane();
         root.setCenter(connectionsListView);

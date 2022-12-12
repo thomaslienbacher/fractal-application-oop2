@@ -32,6 +32,14 @@ public class SpaceTransform {
         return new Complex(x * scaleX + offsetX, y * scaleY + offsetY);
     }
 
+    public double dragDistanceX(double pixelDist) {
+        return pixelDist * scaleX;
+    }
+
+    public double dragDistanceY(double pixelDist) {
+        return pixelDist * scaleY;
+    }
+
     @Override
     public String toString() {
         return String.format("SpaceTransform{scaleX=%.3f, scaleY=%.3f, offsetX=%.3f, offsetY=%.3f}",
