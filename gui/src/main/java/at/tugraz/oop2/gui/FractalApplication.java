@@ -107,13 +107,13 @@ public class FractalApplication extends Application {
     private void restartServices() {
         //Log call for mandelbrot
         FractalRenderOptions renderOptions = new MandelbrotRenderOptions(
-                    mandelbrotX.get(), mandelbrotY.get(), (int)leftCanvas.getWidth(), (int)leftCanvas.getHeight(),
+                mandelbrotX.get(), mandelbrotY.get(), (int) leftCanvas.getWidth(), (int) leftCanvas.getHeight(),
                 mandelbrotZoom.get(), power.get(), iterations.get(), colourMode.getValue(), 0, 1, renderMode.getValue());
         FractalLogger.logRenderCallGUI(renderOptions);
 
         //Log call for julia
         renderOptions = new JuliaRenderOptions(
-                juliaX.get(), juliaY.get(), (int)rightCanvas.getWidth(), (int)rightCanvas.getHeight(),
+                juliaX.get(), juliaY.get(), (int) rightCanvas.getWidth(), (int) rightCanvas.getHeight(),
                 juliaZoom.get(), power.get(), iterations.get(), mandelbrotX.getValue(), mandelbrotY.getValue(), colourMode.getValue(), renderMode.getValue());
         FractalLogger.logRenderCallGUI(renderOptions);
 
@@ -206,7 +206,6 @@ public class FractalApplication extends Application {
             previousMandelbrotX = mouseEvent.getX();
             previousMandelbrotY = mouseEvent.getY();
         });
-//Todo: gui
         leftCanvas.setOnMouseReleased(mouseEvent -> {
             var x = mouseEvent.getX();
             var y = mouseEvent.getY();
@@ -218,19 +217,18 @@ public class FractalApplication extends Application {
 
             var transX = transform.dragDistanceX(dx);
             var transY = transform.dragDistanceY(dy);
-
             // use minus because we move camera
             mandelbrotX.setValue(mandelbrotX.getValue() - transX);
             mandelbrotY.setValue(mandelbrotY.getValue() - transY);
+            FractalLogger.logDragGUI(mandelbrotX.getValue(), mandelbrotY.getValue(), FractalType.MANDELBROT);
         });
-//TODO: gui
-        leftCanvas.setOnScrollFinished(new EventHandler<ScrollEvent>() {
+        leftCanvas.setOnScroll(new EventHandler<ScrollEvent>() {
             @Override
             public void handle(ScrollEvent event) {
                 if (event.getDeltaY() > 0) {
-                    mandelbrotZoom.setValue(mandelbrotZoom.getValue() + (event.getTouchCount() * 0.02));
+                    mandelbrotZoom.setValue(mandelbrotZoom.getValue() + (0.02));
                 } else if (event.getDeltaY() < 0) {
-                    mandelbrotZoom.setValue(mandelbrotZoom.getValue() - (event.getTouchCount() * 0.02));
+                    mandelbrotZoom.setValue(mandelbrotZoom.getValue() - (0.02));
                 }
                 FractalLogger.logZoomGUI(mandelbrotZoom.getValue(), FractalType.MANDELBROT);
                 restartServices();
@@ -263,8 +261,20 @@ public class FractalApplication extends Application {
             // use minus because we move camera
             juliaX.setValue(juliaX.getValue() - transX);
             juliaY.setValue(juliaY.getValue() - transY);
+            FractalLogger.logDragGUI(juliaX.getValue(), juliaY.getValue(), FractalType.JULIA);
         });
-
+        rightCanvas.setOnScroll(new EventHandler<ScrollEvent>() {
+            @Override
+            public void handle(ScrollEvent event) {
+                if (event.getDeltaY() > 0) {
+                    juliaZoom.setValue(juliaZoom.getValue() + (0.02));
+                } else if (event.getDeltaY() < 0) {
+                    juliaZoom.setValue(juliaZoom.getValue() - (0.02));
+                }
+                FractalLogger.logZoomGUI(juliaZoom.getValue(), FractalType.JULIA);
+                restartServices();
+            }
+        });
         mainPane.add(rightCanvas, 1, 0);
 
         ColumnConstraints cc1 =
@@ -418,50 +428,153 @@ public class FractalApplication extends Application {
             }
         });
 
+        iterationsTextField.focusedProperty().addListener((observable, oldValue, newValue) ->
+        {
+            if (!newValue) {
+                try {
+                    Integer.parseInt(iterationsTextField.getText());
+                } catch (NumberFormatException e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
+                    alert.showAndWait();
+                    iterationsTextField.setText("128");
+                    iterations.setValue(128);
+                    restartServices();
+                }
 
-        //TODO: change listeners to lambdas
-        //TODO: only update when not focused and remove discrete formatting
-        mandelbrotX.addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                // update the text of the text field with the new value of the zoom property
-                mandelbrotXTextField.setText(newValue.toString());
             }
         });
-        mandelbrotY.addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                // update the text of the text field with the new value of the zoom property
-                mandelbrotYTextField.setText(newValue.toString());
+
+        powerTextField.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue) {
+                try {
+                    Double.parseDouble(powerTextField.getText());
+                } catch (NumberFormatException e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
+                    alert.showAndWait();
+                    powerTextField.setText("2.0");
+                    power.setValue(2.0);
+                    restartServices();
+                }
+
             }
         });
-        mandelbrotZoom.addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                // update the text of the text field with the new value of the zoom property
-                mandelbrotZoomTextField.setText(newValue.toString());
+        mandelbrotXTextField.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue) {
+                try {
+                    Double.parseDouble(mandelbrotXTextField.getText());
+                } catch (NumberFormatException e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
+                    alert.showAndWait();
+                    mandelbrotXTextField.setText("0.0");
+                    mandelbrotX.setValue(0.0);
+                    restartServices();
+                }
+
             }
         });
-        juliaX.addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                // update the text of the text field with the new value of the zoom property
-                juliaXTextField.setText(newValue.toString());
+        mandelbrotYTextField.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue) {
+                try {
+                    Double.parseDouble(mandelbrotYTextField.getText());
+                } catch (NumberFormatException e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
+                    alert.showAndWait();
+                    mandelbrotYTextField.setText("0.0");
+                    mandelbrotY.setValue(0.0);
+                    restartServices();
+                }
+
             }
         });
-        juliaY.addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                // update the text of the text field with the new value of the zoom property
-                juliaYTextField.setText(newValue.toString());
+        mandelbrotZoomTextField.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue) {
+                try {
+                    Double.parseDouble(mandelbrotZoomTextField.getText());
+                } catch (NumberFormatException e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
+                    alert.showAndWait();
+                    mandelbrotZoomTextField.setText("0.0");
+                    mandelbrotZoom.setValue(0.0);
+                    restartServices();
+                }
+
             }
         });
-        juliaZoom.addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                // update the text of the text field with the new value of the zoom property
-                juliaZoomTextField.setText(newValue.toString());
+        juliaXTextField.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue) {
+                try {
+                    Double.parseDouble(juliaXTextField.getText());
+                } catch (NumberFormatException e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
+                    alert.showAndWait();
+                    juliaXTextField.setText("0.0");
+                    juliaX.setValue(0.0);
+                    restartServices();
+                }
+
             }
+        });
+        juliaYTextField.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue) {
+                try {
+                    Double.parseDouble(juliaYTextField.getText());
+                } catch (NumberFormatException e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
+                    alert.showAndWait();
+                    juliaYTextField.setText("0.0");
+                    juliaY.setValue(0.0);
+                    restartServices();
+                }
+
+            }
+        });
+        juliaZoomTextField.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue) {
+                try {
+                    Double.parseDouble(juliaZoomTextField.getText());
+                } catch (NumberFormatException e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
+                    alert.showAndWait();
+                    juliaZoomTextField.setText("0.0");
+                    juliaY.setValue(0.0);
+                    restartServices();
+                }
+
+            }
+        });
+        tasksPerWorkerTextField.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue) {
+                try {
+                    Integer.parseInt(tasksPerWorkerTextField.getText());
+                } catch (NumberFormatException e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
+                    alert.showAndWait();
+                    tasksPerWorkerTextField.setText("5");
+                    tasksPerWorker.setValue(5);
+                    restartServices();
+                }
+
+            }
+        });
+
+
+        mandelbrotX.addListener((observable, oldValue, newValue) -> {
+            mandelbrotXTextField.setText(newValue.toString());
+        });
+        mandelbrotY.addListener((observable, oldValue, newValue) -> {
+            mandelbrotYTextField.setText(newValue.toString());
+        });
+        mandelbrotZoom.addListener((observable, oldValue, newValue) -> {
+            mandelbrotZoomTextField.setText(newValue.toString());
+        });
+        juliaX.addListener((observable, oldValue, newValue) -> {
+            juliaXTextField.setText(newValue.toString());
+        });
+        juliaY.addListener((observable, oldValue, newValue) -> {
+            juliaYTextField.setText(newValue.toString());
+        });
+        juliaZoom.addListener((observable, oldValue, newValue) -> {
+            juliaZoomTextField.setText(newValue.toString());
         });
 
         var connectionsButton = new Button("Connection Editor");
@@ -523,35 +636,58 @@ public class FractalApplication extends Application {
         primaryStage.setOnCloseRequest(this::onWindowClose);
     }
 
-    //TODO: add try catch
     void parseArguments() {
         Parameters params = getParameters();
         List<String> param_list = params.getRaw();
         for (String param : param_list) {
             switch (param.split("=")[0].toLowerCase()) {
                 case "--iterations":
-                    iterations.set(Integer.parseInt(param.split("=")[1]));
+                    try {
+                        iterations.set(Integer.parseInt(param.split("=")[1]));
+                    } catch (NumberFormatException ignored) {
+                    }
                     break;
                 case "--power":
-                    power.set(Double.parseDouble(param.split("=")[1]));
+                    try {
+                        power.set(Double.parseDouble(param.split("=")[1]));
+                    } catch (NumberFormatException ignored) {
+                    }
                     break;
                 case "--mandelbrotx":
-                    mandelbrotX.set(Double.parseDouble(param.split("=")[1]));
+                    try {
+                        mandelbrotX.set(Double.parseDouble(param.split("=")[1]));
+                    } catch (NumberFormatException ignored) {
+                    }
                     break;
                 case "--mandelbroty":
-                    mandelbrotY.set(Double.parseDouble(param.split("=")[1]));
+                    try {
+                        mandelbrotY.set(Double.parseDouble(param.split("=")[1]));
+                    } catch (NumberFormatException ignored) {
+                    }
                     break;
                 case "--mandelbrotzoom":
-                    mandelbrotZoom.set(Double.parseDouble(param.split("=")[1]));
+                    try {
+                        mandelbrotZoom.set(Double.parseDouble(param.split("=")[1]));
+                    } catch (NumberFormatException ignored) {
+                    }
                     break;
                 case "--juliax":
-                    juliaX.set(Double.parseDouble(param.split("=")[1]));
+                    try {
+                        juliaX.set(Double.parseDouble(param.split("=")[1]));
+                    } catch (NumberFormatException ignored) {
+                    }
                     break;
                 case "--juliay":
-                    juliaY.set(Double.parseDouble(param.split("=")[1]));
+                    try {
+                        juliaY.set(Double.parseDouble(param.split("=")[1]));
+                    } catch (NumberFormatException ignored) {
+                    }
                     break;
                 case "--juliazoom":
-                    juliaZoom.set(Double.parseDouble(param.split("=")[1]));
+                    try {
+                        juliaZoom.set(Double.parseDouble(param.split("=")[1]));
+                    } catch (NumberFormatException ignored) {
+                    }
                     break;
                 case "--colourmode":
                     if (Objects.equals(param.split("=")[1], ColourModes.BLACK_WHITE.name())) {
@@ -562,7 +698,10 @@ public class FractalApplication extends Application {
                     break;
 
                 case "--tasksperworker":
-                    tasksPerWorker.set(Integer.parseInt(param.split("=")[1]));
+                    try {
+                        tasksPerWorker.set(Integer.parseInt(param.split("=")[1]));
+                    } catch (NumberFormatException ignored) {
+                    }
                     break;
                 case "--rendermode":
                     if (Objects.equals(param.split("=")[1], RenderMode.LOCAL.name())) {
@@ -573,10 +712,13 @@ public class FractalApplication extends Application {
                     break;
                 case "--connection":
                     for (String connection : param.split("=")[1].split(",")) {
-                        InetSocketAddress newConnection = new InetSocketAddress(connection.split(":")[0], Integer.parseInt(connection.split(":")[1]));
-                        var currentConnections = connections.getValue();
-                        currentConnections.add(newConnection);
-                        connections.setValue(currentConnections);
+                        try {
+                            InetSocketAddress newConnection = new InetSocketAddress(connection.split(":")[0], Integer.parseInt(connection.split(":")[1]));
+                            var currentConnections = connections.getValue();
+                            currentConnections.add(newConnection);
+                            connections.setValue(currentConnections);
+                        } catch (IllegalArgumentException ignored) {
+                        }
                     }
                     break;
                 default:
