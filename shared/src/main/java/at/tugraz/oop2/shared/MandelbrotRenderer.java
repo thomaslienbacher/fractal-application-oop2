@@ -146,6 +146,7 @@ public class MandelbrotRenderer extends Service<SimpleImage> {
                 tasks.add(new MandelbrotTask(renderId, colourMode, opts));
             }
 
+
             var results = executor.invokeAll(tasks);
             var images = results.stream().map((a) -> {
                 try {

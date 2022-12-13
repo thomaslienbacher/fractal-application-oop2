@@ -105,6 +105,18 @@ public class FractalApplication extends Application {
     }
 
     private void restartServices() {
+        //Log call for mandelbrot
+        FractalRenderOptions renderOptions = new MandelbrotRenderOptions(
+                    mandelbrotX.get(), mandelbrotY.get(), (int)leftCanvas.getWidth(), (int)leftCanvas.getHeight(),
+                mandelbrotZoom.get(), power.get(), iterations.get(), colourMode.getValue(), 0, 1, renderMode.getValue());
+        FractalLogger.logRenderCallGUI(renderOptions);
+
+        //Log call for julia
+        renderOptions = new JuliaRenderOptions(
+                juliaX.get(), juliaY.get(), (int)rightCanvas.getWidth(), (int)rightCanvas.getHeight(),
+                juliaZoom.get(), power.get(), iterations.get(), mandelbrotX.getValue(), mandelbrotY.getValue(), colourMode.getValue(), renderMode.getValue());
+        FractalLogger.logRenderCallGUI(renderOptions);
+
         if (mandelbrotRenderService != null) {
             mandelbrotRenderService.cancel();
         }
@@ -121,7 +133,6 @@ public class FractalApplication extends Application {
         mandelbrotRenderService.setOnSucceeded(e -> mandelbrotRenderFinished(mandelbrotRenderService.getValue()));
         mandelbrotRenderService.start();
 
-        //TODO: where to call FractalLogger.logRenderCallGUI
 
         if (juliaRenderService != null) {
             juliaRenderService.cancel();

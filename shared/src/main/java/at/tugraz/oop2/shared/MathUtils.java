@@ -10,15 +10,12 @@ public class MathUtils {
      * @param i scalar between 0 and 1
      * @return interpolated value
      */
-    public static double interpolate(double a, double b, double i) {
-        assert i <= 1.0;
-        assert i >= 0.0;
-        return a + (b - a) * i;
-    }
-
     public static short interpolate(short a, short b, double i) {
         assert i <= 1.0;
         assert i >= 0.0;
-        return (short) interpolate((double) a, (double) b, i);
+        short interpolated = (short)(a + (double)(b - a) * i);
+        return interpolated;
     }
+
+
 }
