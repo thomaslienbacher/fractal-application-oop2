@@ -164,6 +164,12 @@ public class FractalApplication extends Application {
             if (image.getHeight() < pane.getHeight()) {
                 updateSizes();
             }
+            if (image.getWidth() > pane.getWidth()) {
+                updateSizes();
+            }
+            if (image.getHeight() > pane.getHeight()) {
+                updateSizes();
+            }
         } else //Re-draw on fail?
             updateSizes();
     }
