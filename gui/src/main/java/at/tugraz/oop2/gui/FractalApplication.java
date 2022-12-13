@@ -418,42 +418,42 @@ public class FractalApplication extends Application {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 // update the text of the text field with the new value of the zoom property
-                mandelbrotXTextField.setText(String.format("%.2f", newValue));
+                mandelbrotXTextField.setText(newValue.toString());
             }
         });
         mandelbrotY.addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 // update the text of the text field with the new value of the zoom property
-                mandelbrotYTextField.setText(String.format("%.2f", newValue));
+                mandelbrotYTextField.setText(newValue.toString());
             }
         });
         mandelbrotZoom.addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 // update the text of the text field with the new value of the zoom property
-                mandelbrotZoomTextField.setText(String.format("%.2f", newValue));
+                mandelbrotZoomTextField.setText(newValue.toString());
             }
         });
         juliaX.addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 // update the text of the text field with the new value of the zoom property
-                juliaXTextField.setText(String.format("%.2f", newValue));
+                juliaXTextField.setText(newValue.toString());
             }
         });
         juliaY.addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 // update the text of the text field with the new value of the zoom property
-                juliaYTextField.setText(String.format("%.2f", newValue));
+                juliaYTextField.setText(newValue.toString());
             }
         });
         juliaZoom.addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 // update the text of the text field with the new value of the zoom property
-                juliaZoomTextField.setText(String.format("%.2f", newValue));
+                juliaZoomTextField.setText(newValue.toString());
             }
         });
 
