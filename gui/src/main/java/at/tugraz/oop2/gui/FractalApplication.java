@@ -106,23 +106,17 @@ public class FractalApplication extends Application {
 
     private void restartServices() {
         //Log call for mandelbrot
-        FractalRenderOptions renderOptions = new MandelbrotRenderOptions(
-                mandelbrotX.get(), mandelbrotY.get(), (int) leftCanvas.getWidth(), (int) leftCanvas.getHeight(),
-                mandelbrotZoom.get(), power.get(), iterations.get(), colourMode.getValue(), 0, 1, renderMode.getValue());
+        FractalRenderOptions renderOptions = new MandelbrotRenderOptions(mandelbrotX.get(), mandelbrotY.get(), (int) leftCanvas.getWidth(), (int) leftCanvas.getHeight(), mandelbrotZoom.get(), power.get(), iterations.get(), colourMode.getValue(), 0, 1, renderMode.getValue());
         FractalLogger.logRenderCallGUI(renderOptions);
 
         //Log call for julia
-        renderOptions = new JuliaRenderOptions(
-                juliaX.get(), juliaY.get(), (int) rightCanvas.getWidth(), (int) rightCanvas.getHeight(),
-                juliaZoom.get(), power.get(), iterations.get(), mandelbrotX.getValue(), mandelbrotY.getValue(), colourMode.getValue(), renderMode.getValue());
+        renderOptions = new JuliaRenderOptions(juliaX.get(), juliaY.get(), (int) rightCanvas.getWidth(), (int) rightCanvas.getHeight(), juliaZoom.get(), power.get(), iterations.get(), mandelbrotX.getValue(), mandelbrotY.getValue(), colourMode.getValue(), renderMode.getValue());
         FractalLogger.logRenderCallGUI(renderOptions);
 
         if (mandelbrotRenderService != null) {
             mandelbrotRenderService.cancel();
         }
-        MandelbrotRenderer mandelbrotRenderer = new MandelbrotRenderer(power.get(), iterations.get(), mandelbrotX.get(),
-                mandelbrotY.get(), mandelbrotZoom.get(), colourMode.getValue(), renderMode.getValue(),
-                tasksPerWorker.get(), connections.getValue(), leftCanvas);
+        MandelbrotRenderer mandelbrotRenderer = new MandelbrotRenderer(power.get(), iterations.get(), mandelbrotX.get(), mandelbrotY.get(), mandelbrotZoom.get(), colourMode.getValue(), renderMode.getValue(), tasksPerWorker.get(), connections.getValue(), leftCanvas);
         mandelbrotRenderer.setBounds((int) leftCanvas.getWidth(), (int) leftCanvas.getHeight());
         mandelbrotRenderService = new Service<>() {
             @Override
@@ -137,9 +131,7 @@ public class FractalApplication extends Application {
         if (juliaRenderService != null) {
             juliaRenderService.cancel();
         }
-        JuliaRenderer juliaRenderer = new JuliaRenderer(power.get(), iterations.get(), juliaX.get(),
-                juliaY.get(), juliaZoom.get(), mandelbrotX.get(), mandelbrotY.get(), colourMode.getValue(), renderMode.getValue(),
-                tasksPerWorker.get(), connections.getValue(), rightCanvas);
+        JuliaRenderer juliaRenderer = new JuliaRenderer(power.get(), iterations.get(), juliaX.get(), juliaY.get(), juliaZoom.get(), mandelbrotX.get(), mandelbrotY.get(), colourMode.getValue(), renderMode.getValue(), tasksPerWorker.get(), connections.getValue(), rightCanvas);
         juliaRenderer.setBounds((int) rightCanvas.getWidth(), (int) rightCanvas.getHeight());
         juliaRenderService = new Service<>() {
             @Override
@@ -224,8 +216,7 @@ public class FractalApplication extends Application {
             var dx = x - previousMandelbrotX;
             var dy = y - previousMandelbrotY;
 
-            var transform = new SpaceTransform(leftWidth.intValue(), leftHeight.intValue(),
-                    mandelbrotZoom.get(), mandelbrotX.get(), mandelbrotY.get());
+            var transform = new SpaceTransform(leftWidth.intValue(), leftHeight.intValue(), mandelbrotZoom.get(), mandelbrotX.get(), mandelbrotY.get());
 
             var transX = transform.dragDistanceX(dx);
             var transY = transform.dragDistanceY(dy);
@@ -234,17 +225,14 @@ public class FractalApplication extends Application {
             mandelbrotY.setValue(mandelbrotY.getValue() - transY);
             FractalLogger.logDragGUI(mandelbrotX.getValue(), mandelbrotY.getValue(), FractalType.MANDELBROT);
         });
-        leftCanvas.setOnScroll(new EventHandler<ScrollEvent>() {
-            @Override
-            public void handle(ScrollEvent event) {
-                if (event.getDeltaY() > 0) {
-                    mandelbrotZoom.setValue(mandelbrotZoom.getValue() + (0.02));
-                } else if (event.getDeltaY() < 0) {
-                    mandelbrotZoom.setValue(mandelbrotZoom.getValue() - (0.02));
-                }
-                FractalLogger.logZoomGUI(mandelbrotZoom.getValue(), FractalType.MANDELBROT);
-                restartServices();
+        leftCanvas.setOnScroll(event -> {
+            if (event.getDeltaY() > 0) {
+                mandelbrotZoom.setValue(mandelbrotZoom.getValue() + (0.02));
+            } else if (event.getDeltaY() < 0) {
+                mandelbrotZoom.setValue(mandelbrotZoom.getValue() - (0.02));
             }
+            FractalLogger.logZoomGUI(mandelbrotZoom.getValue(), FractalType.MANDELBROT);
+            restartServices();
         });
 
         mainPane.setGridLinesVisible(true);
@@ -264,8 +252,7 @@ public class FractalApplication extends Application {
             var dx = x - previousJuliaX;
             var dy = y - previousJuliaY;
 
-            var transform = new SpaceTransform(rightWidth.intValue(), rightHeight.intValue(),
-                    juliaZoom.get(), juliaX.get(), juliaY.get());
+            var transform = new SpaceTransform(rightWidth.intValue(), rightHeight.intValue(), juliaZoom.get(), juliaX.get(), juliaY.get());
 
             var transX = transform.dragDistanceX(dx);
             var transY = transform.dragDistanceY(dy);
@@ -275,32 +262,25 @@ public class FractalApplication extends Application {
             juliaY.setValue(juliaY.getValue() - transY);
             FractalLogger.logDragGUI(juliaX.getValue(), juliaY.getValue(), FractalType.JULIA);
         });
-        rightCanvas.setOnScroll(new EventHandler<ScrollEvent>() {
-            @Override
-            public void handle(ScrollEvent event) {
-                if (event.getDeltaY() > 0) {
-                    juliaZoom.setValue(juliaZoom.getValue() + (0.02));
-                } else if (event.getDeltaY() < 0) {
-                    juliaZoom.setValue(juliaZoom.getValue() - (0.02));
-                }
-                FractalLogger.logZoomGUI(juliaZoom.getValue(), FractalType.JULIA);
-                restartServices();
+        rightCanvas.setOnScroll(event -> {
+            if (event.getDeltaY() > 0) {
+                juliaZoom.setValue(juliaZoom.getValue() + (0.02));
+            } else if (event.getDeltaY() < 0) {
+                juliaZoom.setValue(juliaZoom.getValue() - (0.02));
             }
+            FractalLogger.logZoomGUI(juliaZoom.getValue(), FractalType.JULIA);
+            restartServices();
         });
         mainPane.add(rightCanvas, 1, 0);
 
-        ColumnConstraints cc1 =
-                new ColumnConstraints(100, 100, -1, Priority.ALWAYS, HPos.CENTER, true);
-        ColumnConstraints cc2 =
-                new ColumnConstraints(100, 100, -1, Priority.ALWAYS, HPos.CENTER, true);
-        ColumnConstraints cc3 =
-                new ColumnConstraints(400, 400, 400, Priority.ALWAYS, HPos.CENTER, true);
+        ColumnConstraints cc1 = new ColumnConstraints(100, 100, -1, Priority.ALWAYS, HPos.CENTER, true);
+        ColumnConstraints cc2 = new ColumnConstraints(100, 100, -1, Priority.ALWAYS, HPos.CENTER, true);
+        ColumnConstraints cc3 = new ColumnConstraints(400, 400, 400, Priority.ALWAYS, HPos.CENTER, true);
 
         mainPane.getColumnConstraints().addAll(cc1, cc2, cc3);
 
 
-        RowConstraints rc1 =
-                new RowConstraints(400, 400, -1, Priority.ALWAYS, VPos.CENTER, true);
+        RowConstraints rc1 = new RowConstraints(400, 400, -1, Priority.ALWAYS, VPos.CENTER, true);
 
         mainPane.getRowConstraints().addAll(rc1);
 
@@ -440,8 +420,7 @@ public class FractalApplication extends Application {
             }
         });
 
-        iterationsTextField.focusedProperty().addListener((observable, oldValue, newValue) ->
-        {
+        iterationsTextField.focusedProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue) {
                 try {
                     Integer.parseInt(iterationsTextField.getText());
@@ -608,10 +587,8 @@ public class FractalApplication extends Application {
         controlPane.add(new Label("~~~"), 1, 12);
 
         //min, preferred, max
-        ColumnConstraints controlLabelColConstraint =
-                new ColumnConstraints(195, 195, 200, Priority.ALWAYS, HPos.CENTER, true);
-        ColumnConstraints controlControlColConstraint =
-                new ColumnConstraints(195, 195, 195, Priority.ALWAYS, HPos.CENTER, true);
+        ColumnConstraints controlLabelColConstraint = new ColumnConstraints(195, 195, 200, Priority.ALWAYS, HPos.CENTER, true);
+        ColumnConstraints controlControlColConstraint = new ColumnConstraints(195, 195, 195, Priority.ALWAYS, HPos.CENTER, true);
         controlPane.getColumnConstraints().addAll(controlLabelColConstraint, controlControlColConstraint);
         mainPane.add(controlPane, 2, 0);
 
@@ -639,8 +616,7 @@ public class FractalApplication extends Application {
             FractalLogger.logInitializedGUI(mainPane, primaryStage, leftCanvas, rightCanvas);
 
 
-            FractalLogger.logArgumentsGUI(mandelbrotX, mandelbrotY, mandelbrotZoom, power,
-                    iterations, juliaX, juliaY, juliaZoom, colourMode);
+            FractalLogger.logArgumentsGUI(mandelbrotX, mandelbrotY, mandelbrotZoom, power, iterations, juliaX, juliaY, juliaZoom, colourMode);
 
             updateSizes();
         });
