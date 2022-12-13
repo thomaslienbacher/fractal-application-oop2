@@ -195,7 +195,7 @@ public class FractalApplication extends Application {
             previousMandelbrotX = mouseEvent.getX();
             previousMandelbrotY = mouseEvent.getY();
         });
-
+//Todo: gui
         leftCanvas.setOnMouseReleased(mouseEvent -> {
             var x = mouseEvent.getX();
             var y = mouseEvent.getY();
@@ -212,15 +212,16 @@ public class FractalApplication extends Application {
             mandelbrotX.setValue(mandelbrotX.getValue() - transX);
             mandelbrotY.setValue(mandelbrotY.getValue() - transY);
         });
-
-        leftCanvas.setOnScroll(new EventHandler<ScrollEvent>() {
+//TODO: gui
+        leftCanvas.setOnScrollFinished(new EventHandler<ScrollEvent>() {
             @Override
             public void handle(ScrollEvent event) {
                 if (event.getDeltaY() > 0) {
-                    mandelbrotZoom.setValue(mandelbrotZoom.getValue() + 0.02);
+                    mandelbrotZoom.setValue(mandelbrotZoom.getValue() + (event.getTouchCount() * 0.02));
                 } else if (event.getDeltaY() < 0) {
-                    mandelbrotZoom.setValue(mandelbrotZoom.getValue() - 0.02);
+                    mandelbrotZoom.setValue(mandelbrotZoom.getValue() - (event.getTouchCount() * 0.02));
                 }
+                FractalLogger.logZoomGUI(mandelbrotZoom.getValue(), FractalType.MANDELBROT);
                 restartServices();
             }
         });
@@ -511,6 +512,7 @@ public class FractalApplication extends Application {
         primaryStage.setOnCloseRequest(this::onWindowClose);
     }
 
+    //TODO: add try catch
     void parseArguments() {
         Parameters params = getParameters();
         List<String> param_list = params.getRaw();
