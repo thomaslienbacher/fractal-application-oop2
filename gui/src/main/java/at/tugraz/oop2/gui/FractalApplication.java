@@ -10,19 +10,14 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
 import javafx.geometry.HPos;
-import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.MouseDragEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
@@ -168,7 +163,7 @@ public class FractalApplication extends Application {
             image.copyToCanvas(rightCanvas);
             FractalLogger.logDrawDoneGUI(FractalType.JULIA);
 
-            var pane = mainPane.getCellBounds(0, 0);
+            var pane = mainPane.getCellBounds(1, 0);
             if (image.getWidth() < pane.getWidth()) {
                 updateSizes();
             }
