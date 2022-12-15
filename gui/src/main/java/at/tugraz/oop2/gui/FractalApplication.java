@@ -104,8 +104,10 @@ public class FractalApplication extends Application {
         restartServices();
     }
 
+    //TODO: split into seperate services
     private void restartServices() {
         //Log call for mandelbrot
+        // TODO: remove fragment number and fragment index, locally they are ignored
         FractalRenderOptions renderOptions = new MandelbrotRenderOptions(mandelbrotX.get(), mandelbrotY.get(), (int) leftCanvas.getWidth(), (int) leftCanvas.getHeight(), mandelbrotZoom.get(), power.get(), iterations.get(), colourMode.getValue(), 0, 1, renderMode.getValue());
         FractalLogger.logRenderCallGUI(renderOptions);
 
@@ -206,6 +208,7 @@ public class FractalApplication extends Application {
         leftCanvas.setCursor(Cursor.HAND);
 
         // reset drag start position
+        //TODO: dragging all the time
         leftCanvas.setOnMousePressed(mouseEvent -> {
             previousMandelbrotX = mouseEvent.getX();
             previousMandelbrotY = mouseEvent.getY();
@@ -226,6 +229,7 @@ public class FractalApplication extends Application {
             FractalLogger.logDragGUI(mandelbrotX.getValue(), mandelbrotY.getValue(), FractalType.MANDELBROT);
         });
         leftCanvas.setOnScroll(event -> {
+            //TODO: fix scroll calculations
             if (event.getDeltaY() > 0) {
                 mandelbrotZoom.setValue(mandelbrotZoom.getValue() + (0.02));
             } else if (event.getDeltaY() < 0) {
@@ -241,6 +245,7 @@ public class FractalApplication extends Application {
         rightCanvas = new Canvas();
         rightCanvas.setCursor(Cursor.HAND);
 
+        //TODO: dragging all the time
         rightCanvas.setOnMousePressed(mouseEvent -> {
             previousJuliaX = mouseEvent.getX();
             previousJuliaY = mouseEvent.getY();
@@ -263,10 +268,13 @@ public class FractalApplication extends Application {
             FractalLogger.logDragGUI(juliaX.getValue(), juliaY.getValue(), FractalType.JULIA);
         });
         rightCanvas.setOnScroll(event -> {
+            //TODO: fix scroll calculations
+            // zoom += delta * 0.02
+            System.out.println(event.getDeltaX()  + " " + event.getDeltaY());
             if (event.getDeltaY() > 0) {
-                juliaZoom.setValue(juliaZoom.getValue() + (0.02));
+                juliaZoom.setValue(juliaZoom.getValue() + (event.getDeltaY() * 0.02));
             } else if (event.getDeltaY() < 0) {
-                juliaZoom.setValue(juliaZoom.getValue() - (0.02));
+                juliaZoom.setValue(juliaZoom.getValue() + (event.getDeltaY() * 0.02));
             }
             FractalLogger.logZoomGUI(juliaZoom.getValue(), FractalType.JULIA);
             restartServices();
