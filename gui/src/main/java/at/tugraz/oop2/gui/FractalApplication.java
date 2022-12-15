@@ -563,7 +563,7 @@ public class FractalApplication extends Application {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
                     alert.showAndWait();
                     juliaZoomTextField.setText("0.0");
-                    juliaY.setValue(0.0);
+                    juliaZoom.setValue(0.0);
                     restartServices();
                 }
 
