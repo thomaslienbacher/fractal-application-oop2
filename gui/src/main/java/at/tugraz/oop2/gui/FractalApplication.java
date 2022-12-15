@@ -101,18 +101,14 @@ public class FractalApplication extends Application {
 
         rightCanvas.resize(rightSize.getWidth(), rightSize.getWidth());
 
-        restartServices();
+        restartMandelbrotService();
+        restartJuliaService();
     }
 
-    //TODO: split into seperate services
-    private void restartServices() {
+    private void restartMandelbrotService() {
         //Log call for mandelbrot
         // TODO: remove fragment number and fragment index, locally they are ignored
         FractalRenderOptions renderOptions = new MandelbrotRenderOptions(mandelbrotX.get(), mandelbrotY.get(), (int) leftCanvas.getWidth(), (int) leftCanvas.getHeight(), mandelbrotZoom.get(), power.get(), iterations.get(), colourMode.getValue(), 0, 1, renderMode.getValue());
-        FractalLogger.logRenderCallGUI(renderOptions);
-
-        //Log call for julia
-        renderOptions = new JuliaRenderOptions(juliaX.get(), juliaY.get(), (int) rightCanvas.getWidth(), (int) rightCanvas.getHeight(), juliaZoom.get(), power.get(), iterations.get(), mandelbrotX.getValue(), mandelbrotY.getValue(), colourMode.getValue(), renderMode.getValue());
         FractalLogger.logRenderCallGUI(renderOptions);
 
         if (mandelbrotRenderService != null) {
@@ -128,7 +124,11 @@ public class FractalApplication extends Application {
         };
         mandelbrotRenderService.setOnSucceeded(e -> mandelbrotRenderFinished(mandelbrotRenderService.getValue()));
         mandelbrotRenderService.start();
-
+    }
+    private void restartJuliaService() {
+        //Log call for julia
+        FractalRenderOptions renderOptions = new JuliaRenderOptions(juliaX.get(), juliaY.get(), (int) rightCanvas.getWidth(), (int) rightCanvas.getHeight(), juliaZoom.get(), power.get(), iterations.get(), mandelbrotX.getValue(), mandelbrotY.getValue(), colourMode.getValue(), renderMode.getValue());
+        FractalLogger.logRenderCallGUI(renderOptions);
 
         if (juliaRenderService != null) {
             juliaRenderService.cancel();
@@ -144,7 +144,6 @@ public class FractalApplication extends Application {
         juliaRenderService.setOnSucceeded(e -> juliaRenderFinished(juliaRenderService.getValue()));
         juliaRenderService.start();
     }
-
     public void mandelbrotRenderFinished(SimpleImage image) {
         if (image != null) {
             FractalLogger.logRenderFinishedGUI(FractalType.MANDELBROT, image);
@@ -236,7 +235,7 @@ public class FractalApplication extends Application {
                 mandelbrotZoom.setValue(mandelbrotZoom.getValue() - (0.02));
             }
             FractalLogger.logZoomGUI(mandelbrotZoom.getValue(), FractalType.MANDELBROT);
-            restartServices();
+            restartMandelbrotService();
         });
 
         mainPane.setGridLinesVisible(true);
@@ -277,7 +276,7 @@ public class FractalApplication extends Application {
                 juliaZoom.setValue(juliaZoom.getValue() + (event.getDeltaY() * 0.02));
             }
             FractalLogger.logZoomGUI(juliaZoom.getValue(), FractalType.JULIA);
-            restartServices();
+            restartJuliaService();
         });
         mainPane.add(rightCanvas, 1, 0);
 
@@ -358,7 +357,8 @@ public class FractalApplication extends Application {
             try {
                 if (!Objects.equals(newValue, oldValue)) {
                     iterations.set(Integer.parseInt(newValue));
-                    restartServices();
+                    restartMandelbrotService();
+                    restartJuliaService();
                 }
             } catch (NumberFormatException ignored) {
             }
@@ -369,7 +369,8 @@ public class FractalApplication extends Application {
             try {
                 if (!Objects.equals(newValue, oldValue)) {
                     power.set(Double.parseDouble(newValue));
-                    restartServices();
+                    restartMandelbrotService();
+                    restartJuliaService();
                 }
             } catch (NumberFormatException ignored) {
             }
@@ -380,7 +381,8 @@ public class FractalApplication extends Application {
             try {
                 if (!Objects.equals(newValue, oldValue)) {
                     mandelbrotX.set(Double.parseDouble(newValue));
-                    restartServices();
+                    restartMandelbrotService();
+                    restartJuliaService();
                 }
             } catch (NumberFormatException ignored) {
             }
@@ -391,7 +393,8 @@ public class FractalApplication extends Application {
             try {
                 if (!Objects.equals(newValue, oldValue)) {
                     mandelbrotY.set(Double.parseDouble(newValue));
-                    restartServices();
+                    restartMandelbrotService();
+                    restartJuliaService();
                 }
             } catch (NumberFormatException ignored) {
             }
@@ -402,7 +405,7 @@ public class FractalApplication extends Application {
             try {
                 if (!Objects.equals(newValue, oldValue)) {
                     mandelbrotZoom.set(Double.parseDouble(newValue));
-                    restartServices();
+                    restartMandelbrotService();
                 }
             } catch (NumberFormatException ignored) {
             }
@@ -413,7 +416,7 @@ public class FractalApplication extends Application {
             try {
                 if (!Objects.equals(newValue, oldValue)) {
                     juliaX.set(Double.parseDouble(newValue));
-                    restartServices();
+                    restartJuliaService();
                 }
             } catch (NumberFormatException ignored) {
             }
@@ -424,7 +427,7 @@ public class FractalApplication extends Application {
             try {
                 if (!Objects.equals(newValue, oldValue)) {
                     juliaY.set(Double.parseDouble(newValue));
-                    restartServices();
+                    restartJuliaService();
                 }
             } catch (NumberFormatException ignored) {
             }
@@ -435,7 +438,7 @@ public class FractalApplication extends Application {
             try {
                 if (!Objects.equals(newValue, oldValue)) {
                     juliaZoom.set(Double.parseDouble(newValue));
-                    restartServices();
+                    restartJuliaService();
                 }
             } catch (NumberFormatException ignored) {
             }
@@ -445,7 +448,8 @@ public class FractalApplication extends Application {
         colourModeField.getSelectionModel().select(colourMode.getValue());
         colourModeField.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
             colourMode.setValue(newValue);
-            restartServices();
+            restartMandelbrotService();
+            restartJuliaService();
         });
 
         ComboBox<RenderMode> renderModeField = new ComboBox<>(FXCollections.observableArrayList(RenderMode.values()));
@@ -473,7 +477,8 @@ public class FractalApplication extends Application {
                     alert.showAndWait();
                     iterationsTextField.setText("128");
                     iterations.setValue(128);
-                    restartServices();
+                    restartMandelbrotService();
+                    restartJuliaService();
                 }
 
             }
@@ -488,7 +493,8 @@ public class FractalApplication extends Application {
                     alert.showAndWait();
                     powerTextField.setText("2.0");
                     power.setValue(2.0);
-                    restartServices();
+                    restartMandelbrotService();
+                    restartJuliaService();
                 }
 
             }
@@ -502,7 +508,8 @@ public class FractalApplication extends Application {
                     alert.showAndWait();
                     mandelbrotXTextField.setText("0.0");
                     mandelbrotX.setValue(0.0);
-                    restartServices();
+                    restartMandelbrotService();
+                    restartJuliaService();
                 }
 
             }
@@ -516,7 +523,8 @@ public class FractalApplication extends Application {
                     alert.showAndWait();
                     mandelbrotYTextField.setText("0.0");
                     mandelbrotY.setValue(0.0);
-                    restartServices();
+                    restartMandelbrotService();
+                    restartJuliaService();
                 }
 
             }
@@ -530,7 +538,7 @@ public class FractalApplication extends Application {
                     alert.showAndWait();
                     mandelbrotZoomTextField.setText("0.0");
                     mandelbrotZoom.setValue(0.0);
-                    restartServices();
+                    restartMandelbrotService();
                 }
 
             }
@@ -544,7 +552,7 @@ public class FractalApplication extends Application {
                     alert.showAndWait();
                     juliaXTextField.setText("0.0");
                     juliaX.setValue(0.0);
-                    restartServices();
+                    restartJuliaService();
                 }
 
             }
@@ -558,7 +566,7 @@ public class FractalApplication extends Application {
                     alert.showAndWait();
                     juliaYTextField.setText("0.0");
                     juliaY.setValue(0.0);
-                    restartServices();
+                    restartJuliaService();
                 }
 
             }
@@ -572,7 +580,7 @@ public class FractalApplication extends Application {
                     alert.showAndWait();
                     juliaZoomTextField.setText("0.0");
                     juliaZoom.setValue(0.0);
-                    restartServices();
+                    restartJuliaService();
                 }
 
             }
@@ -586,7 +594,6 @@ public class FractalApplication extends Application {
                     alert.showAndWait();
                     tasksPerWorkerTextField.setText("5");
                     tasksPerWorker.setValue(5);
-                    restartServices();
                 }
 
             }
