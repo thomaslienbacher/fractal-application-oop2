@@ -229,11 +229,7 @@ public class FractalApplication extends Application {
         });
         leftCanvas.setOnScroll(event -> {
             //TODO: fix scroll calculations
-            if (event.getDeltaY() > 0) {
-                mandelbrotZoom.setValue(mandelbrotZoom.getValue() + (0.02));
-            } else if (event.getDeltaY() < 0) {
-                mandelbrotZoom.setValue(mandelbrotZoom.getValue() - (0.02));
-            }
+            mandelbrotZoom.setValue(mandelbrotZoom.getValue() + (event.getDeltaY() * 0.02));
             FractalLogger.logZoomGUI(mandelbrotZoom.getValue(), FractalType.MANDELBROT);
             restartMandelbrotService();
         });
@@ -270,11 +266,7 @@ public class FractalApplication extends Application {
             //TODO: fix scroll calculations
             // zoom += delta * 0.02
             System.out.println(event.getDeltaX()  + " " + event.getDeltaY());
-            if (event.getDeltaY() > 0) {
-                juliaZoom.setValue(juliaZoom.getValue() + (event.getDeltaY() * 0.02));
-            } else if (event.getDeltaY() < 0) {
-                juliaZoom.setValue(juliaZoom.getValue() + (event.getDeltaY() * 0.02));
-            }
+            juliaZoom.setValue(juliaZoom.getValue() + (event.getDeltaY() * 0.02));
             FractalLogger.logZoomGUI(juliaZoom.getValue(), FractalType.JULIA);
             restartJuliaService();
         });
