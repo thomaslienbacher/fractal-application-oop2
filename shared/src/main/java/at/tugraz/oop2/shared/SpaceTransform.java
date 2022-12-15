@@ -13,7 +13,7 @@ public class SpaceTransform {
 
     public SpaceTransform(int imgWidth, int imgHeight, double zoom, double centerX, double centerY) {
         double wcomp = Math.pow(2.0, 2.0 - zoom);
-        double hcomp = ((double) imgWidth / (double) imgHeight) * Math.pow(2.0, 2.0 - zoom);
+        double hcomp = ((double) imgHeight / (double) imgWidth) * Math.pow(2.0, 2.0 - zoom);
 
         this.scaleX = wcomp / ((double) imgWidth - 1);
         this.scaleY = hcomp / ((double) imgHeight - 1);
