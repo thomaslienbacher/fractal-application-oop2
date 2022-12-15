@@ -740,7 +740,7 @@ public class FractalApplication extends Application {
         connectionsListView.setItems(inetSocketAddressObservableList);
 
         Button addButton = new Button("Add");
-        addButton.setOnAction(event -> addConnection());
+        addButton.setOnAction(event -> addConnection(connectionsListView));
 
         Button deleteButton = new Button("Delete");
         deleteButton.setOnAction(event -> deleteSelectedConnection(connectionsListView));
@@ -781,7 +781,7 @@ public class FractalApplication extends Application {
         connectionsWindow.show();
     }
 
-    public void addConnection() {
+    public void addConnection(ListView<InetSocketAddress> connectionsListView) {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Add Connection");
         dialog.setHeaderText("Enter the host string and port for the new connection");
