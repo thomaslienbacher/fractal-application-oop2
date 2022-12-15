@@ -293,6 +293,42 @@ public class FractalApplication extends Application {
         //mainPane.widthProperty().addListener(observable -> updateSizes());
         //mainPane.heightProperty().addListener(observable -> updateSizes());
 
+        setupControlPane();
+        mainPane.add(controlPane, 2, 0);
+
+        Scene scene = new Scene(mainPane);
+
+        primaryStage.setTitle("Fractal Displayer");
+
+        primaryStage.addEventHandler(WindowEvent.WINDOW_SHOWING, event -> {
+            updateSizes();
+        });
+        primaryStage.addEventHandler(WindowEvent.WINDOW_SHOWN, event -> {
+            updateSizes();
+        });
+        primaryStage.addEventHandler(WindowEvent.ANY, event -> {
+            updateSizes();
+        });
+
+        primaryStage.setWidth(1080);
+        primaryStage.setHeight(720);
+
+        primaryStage.setScene(scene);
+        primaryStage.show();
+
+        Platform.runLater(() -> {
+            FractalLogger.logInitializedGUI(mainPane, primaryStage, leftCanvas, rightCanvas);
+
+
+            FractalLogger.logArgumentsGUI(mandelbrotX, mandelbrotY, mandelbrotZoom, power, iterations, juliaX, juliaY, juliaZoom, colourMode);
+
+            updateSizes();
+        });
+
+        primaryStage.setOnCloseRequest(this::onWindowClose);
+    }
+
+    public void setupControlPane() {
         controlPane = new GridPane();
         controlPane.setVgap(4.0);
         controlPane.add(new Label("Iterations"), 0, 0);
@@ -590,41 +626,9 @@ public class FractalApplication extends Application {
         ColumnConstraints controlLabelColConstraint = new ColumnConstraints(195, 195, 200, Priority.ALWAYS, HPos.CENTER, true);
         ColumnConstraints controlControlColConstraint = new ColumnConstraints(195, 195, 195, Priority.ALWAYS, HPos.CENTER, true);
         controlPane.getColumnConstraints().addAll(controlLabelColConstraint, controlControlColConstraint);
-        mainPane.add(controlPane, 2, 0);
-
-        Scene scene = new Scene(mainPane);
-
-        primaryStage.setTitle("Fractal Displayer");
-
-        primaryStage.addEventHandler(WindowEvent.WINDOW_SHOWING, event -> {
-            updateSizes();
-        });
-        primaryStage.addEventHandler(WindowEvent.WINDOW_SHOWN, event -> {
-            updateSizes();
-        });
-        primaryStage.addEventHandler(WindowEvent.ANY, event -> {
-            updateSizes();
-        });
-
-        primaryStage.setWidth(1080);
-        primaryStage.setHeight(720);
-
-        primaryStage.setScene(scene);
-        primaryStage.show();
-
-        Platform.runLater(() -> {
-            FractalLogger.logInitializedGUI(mainPane, primaryStage, leftCanvas, rightCanvas);
-
-
-            FractalLogger.logArgumentsGUI(mandelbrotX, mandelbrotY, mandelbrotZoom, power, iterations, juliaX, juliaY, juliaZoom, colourMode);
-
-            updateSizes();
-        });
-
-        primaryStage.setOnCloseRequest(this::onWindowClose);
     }
 
-    void parseArguments() {
+    public void parseArguments() {
         Parameters params = getParameters();
         List<String> param_list = params.getRaw();
         for (String param : param_list) {
