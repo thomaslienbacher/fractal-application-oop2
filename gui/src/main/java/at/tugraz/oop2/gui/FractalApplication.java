@@ -247,7 +247,7 @@ public class FractalApplication extends Application {
             previousJuliaY = mouseEvent.getY();
         });
 
-        rightCanvas.setOnMouseDragged(mouseEvent -> {
+        rightCanvas.setOnMouseReleased(mouseEvent -> {
             var x = mouseEvent.getX();
             var y = mouseEvent.getY();
             var dx = x - previousJuliaX;
@@ -466,7 +466,6 @@ public class FractalApplication extends Application {
                 } catch (NumberFormatException e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
                     alert.showAndWait();
-                    iterationsTextField.setText("128");
                     iterations.setValue(128);
                     restartMandelbrotService();
                     restartJuliaService();
@@ -482,7 +481,6 @@ public class FractalApplication extends Application {
                 } catch (NumberFormatException e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
                     alert.showAndWait();
-                    powerTextField.setText("2.0");
                     power.setValue(2.0);
                     restartMandelbrotService();
                     restartJuliaService();
@@ -497,7 +495,6 @@ public class FractalApplication extends Application {
                 } catch (NumberFormatException e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
                     alert.showAndWait();
-                    mandelbrotXTextField.setText("0.0");
                     mandelbrotX.setValue(0.0);
                     restartMandelbrotService();
                     restartJuliaService();
@@ -512,7 +509,6 @@ public class FractalApplication extends Application {
                 } catch (NumberFormatException e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
                     alert.showAndWait();
-                    mandelbrotYTextField.setText("0.0");
                     mandelbrotY.setValue(0.0);
                     restartMandelbrotService();
                     restartJuliaService();
@@ -527,7 +523,6 @@ public class FractalApplication extends Application {
                 } catch (NumberFormatException e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
                     alert.showAndWait();
-                    mandelbrotZoomTextField.setText("0.0");
                     mandelbrotZoom.setValue(0.0);
                     restartMandelbrotService();
                 }
@@ -541,7 +536,6 @@ public class FractalApplication extends Application {
                 } catch (NumberFormatException e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
                     alert.showAndWait();
-                    juliaXTextField.setText("0.0");
                     juliaX.setValue(0.0);
                     restartJuliaService();
                 }
@@ -555,7 +549,6 @@ public class FractalApplication extends Application {
                 } catch (NumberFormatException e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
                     alert.showAndWait();
-                    juliaYTextField.setText("0.0");
                     juliaY.setValue(0.0);
                     restartJuliaService();
                 }
@@ -569,7 +562,6 @@ public class FractalApplication extends Application {
                 } catch (NumberFormatException e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
                     alert.showAndWait();
-                    juliaZoomTextField.setText("0.0");
                     juliaZoom.setValue(0.0);
                     restartJuliaService();
                 }
@@ -583,7 +575,6 @@ public class FractalApplication extends Application {
                 } catch (NumberFormatException e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
                     alert.showAndWait();
-                    tasksPerWorkerTextField.setText("5");
                     tasksPerWorker.setValue(5);
                 }
 
