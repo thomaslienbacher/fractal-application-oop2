@@ -789,14 +789,21 @@ public class FractalApplication extends Application {
 
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {
-            String[] hostPort = result.get().split(":");
-            String host = hostPort[0];
-            int port = Integer.parseInt(hostPort[1]);
-
-            List<InetSocketAddress> connectionsList = connections.getValue();
-            connectionsList.add(new InetSocketAddress(host, port));
-            connections.setValue(connectionsList);
-            connectionsListView.setItems(FXCollections.observableArrayList(connections.getValue()));
+            try {
+                String[] hostPort = result.get().split(":");
+                String host = hostPort[0];
+                int port = Integer.parseInt(hostPort[1]);
+                List<InetSocketAddress> connectionsList = connections.getValue();
+                connectionsList.add(new InetSocketAddress(host, port));
+                connections.setValue(connectionsList);
+                connectionsListView.setItems(FXCollections.observableArrayList(connections.getValue()));
+            } catch (Exception e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Host:Port Input");
+                alert.setHeaderText(null);
+                alert.setContentText("Wrong Format!");
+                alert.showAndWait();
+            }
         }
     }
 
@@ -820,16 +827,24 @@ public class FractalApplication extends Application {
 
             Optional<String> result = dialog.showAndWait();
             if (result.isPresent()) {
-                String[] hostPort = result.get().split(":");
-                String host = hostPort[0];
-                int port = Integer.parseInt(hostPort[1]);
+                try {
+                    String[] hostPort = result.get().split(":");
+                    String host = hostPort[0];
+                    int port = Integer.parseInt(hostPort[1]);
 
-                List<InetSocketAddress> connectionsList = connections.getValue();
-                connectionsList.remove(selectedConnection);
+                    List<InetSocketAddress> connectionsList = connections.getValue();
+                    connectionsList.remove(selectedConnection);
 
-                connectionsList.add(new InetSocketAddress(host, port));
-                connections.setValue(connectionsList);
-                connectionsListView.setItems(FXCollections.observableArrayList(connections.getValue()));
+                    connectionsList.add(new InetSocketAddress(host, port));
+                    connections.setValue(connectionsList);
+                    connectionsListView.setItems(FXCollections.observableArrayList(connections.getValue()));
+                } catch (Exception e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Host:Port Input");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Wrong Format!");
+                    alert.showAndWait();
+                }
             }
         }
     }
