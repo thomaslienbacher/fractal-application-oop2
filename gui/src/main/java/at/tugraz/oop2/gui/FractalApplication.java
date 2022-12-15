@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class FractalApplication extends Application {
@@ -125,6 +127,7 @@ public class FractalApplication extends Application {
         mandelbrotRenderService.setOnSucceeded(e -> mandelbrotRenderFinished(mandelbrotRenderService.getValue()));
         mandelbrotRenderService.start();
     }
+
     private void restartJuliaService() {
         //Log call for julia
         FractalRenderOptions renderOptions = new JuliaRenderOptions(juliaX.get(), juliaY.get(), (int) rightCanvas.getWidth(), (int) rightCanvas.getHeight(), juliaZoom.get(), power.get(), iterations.get(), mandelbrotX.getValue(), mandelbrotY.getValue(), colourMode.getValue(), renderMode.getValue());
@@ -144,6 +147,7 @@ public class FractalApplication extends Application {
         juliaRenderService.setOnSucceeded(e -> juliaRenderFinished(juliaRenderService.getValue()));
         juliaRenderService.start();
     }
+
     public void mandelbrotRenderFinished(SimpleImage image) {
         if (image != null) {
             FractalLogger.logRenderFinishedGUI(FractalType.MANDELBROT, image);
@@ -229,7 +233,6 @@ public class FractalApplication extends Application {
         });
 
         leftCanvas.setOnScroll(event -> {
-            //TODO: fix scroll calculations
             mandelbrotZoom.setValue(mandelbrotZoom.getValue() + (event.getDeltaY() * 0.02));
             FractalLogger.logZoomGUI(mandelbrotZoom.getValue(), FractalType.MANDELBROT);
             restartMandelbrotService();
@@ -264,9 +267,7 @@ public class FractalApplication extends Application {
                 });
 
         rightCanvas.setOnScroll(event -> {
-            //TODO: fix scroll calculations
-            // zoom += delta * 0.02
-            System.out.println(event.getDeltaX()  + " " + event.getDeltaY());
+            System.out.println(event.getDeltaX() + " " + event.getDeltaY());
             juliaZoom.setValue(juliaZoom.getValue() + (event.getDeltaY() * 0.02));
             FractalLogger.logZoomGUI(juliaZoom.getValue(), FractalType.JULIA);
             restartJuliaService();
@@ -468,7 +469,6 @@ public class FractalApplication extends Application {
                 } catch (NumberFormatException e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
                     alert.showAndWait();
-                    iterationsTextField.setText("128");
                     iterations.setValue(128);
                     restartMandelbrotService();
                     restartJuliaService();
@@ -484,7 +484,6 @@ public class FractalApplication extends Application {
                 } catch (NumberFormatException e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
                     alert.showAndWait();
-                    powerTextField.setText("2.0");
                     power.setValue(2.0);
                     restartMandelbrotService();
                     restartJuliaService();
@@ -499,7 +498,6 @@ public class FractalApplication extends Application {
                 } catch (NumberFormatException e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
                     alert.showAndWait();
-                    mandelbrotXTextField.setText("0.0");
                     mandelbrotX.setValue(0.0);
                     restartMandelbrotService();
                     restartJuliaService();
@@ -514,7 +512,6 @@ public class FractalApplication extends Application {
                 } catch (NumberFormatException e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
                     alert.showAndWait();
-                    mandelbrotYTextField.setText("0.0");
                     mandelbrotY.setValue(0.0);
                     restartMandelbrotService();
                     restartJuliaService();
@@ -529,7 +526,6 @@ public class FractalApplication extends Application {
                 } catch (NumberFormatException e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
                     alert.showAndWait();
-                    mandelbrotZoomTextField.setText("0.0");
                     mandelbrotZoom.setValue(0.0);
                     restartMandelbrotService();
                 }
@@ -543,7 +539,6 @@ public class FractalApplication extends Application {
                 } catch (NumberFormatException e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
                     alert.showAndWait();
-                    juliaXTextField.setText("0.0");
                     juliaX.setValue(0.0);
                     restartJuliaService();
                 }
@@ -557,7 +552,6 @@ public class FractalApplication extends Application {
                 } catch (NumberFormatException e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
                     alert.showAndWait();
-                    juliaYTextField.setText("0.0");
                     juliaY.setValue(0.0);
                     restartJuliaService();
                 }
@@ -571,7 +565,6 @@ public class FractalApplication extends Application {
                 } catch (NumberFormatException e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
                     alert.showAndWait();
-                    juliaZoomTextField.setText("0.0");
                     juliaZoom.setValue(0.0);
                     restartJuliaService();
                 }
@@ -585,7 +578,6 @@ public class FractalApplication extends Application {
                 } catch (NumberFormatException e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "The entered value is not in the right format", ButtonType.CLOSE);
                     alert.showAndWait();
-                    tasksPerWorkerTextField.setText("5");
                     tasksPerWorker.setValue(5);
                 }
 
@@ -594,22 +586,64 @@ public class FractalApplication extends Application {
 
 
         mandelbrotX.addListener((observable, oldValue, newValue) -> {
-            mandelbrotXTextField.setText(newValue.toString());
+            if (!Objects.equals(oldValue, newValue)) {
+                Pattern pattern = Pattern.compile("[0-9](\\.)?");
+                Matcher matcher = pattern.matcher(newValue.toString());
+                boolean matchFound = matcher.find();
+                if (!matchFound){
+                    mandelbrotXTextField.setText(newValue.toString());
+                }
+            }
         });
         mandelbrotY.addListener((observable, oldValue, newValue) -> {
-            mandelbrotYTextField.setText(newValue.toString());
+            if (!Objects.equals(oldValue, newValue)) {
+                Pattern pattern = Pattern.compile("[0-9](\\.)?");
+                Matcher matcher = pattern.matcher(newValue.toString());
+                boolean matchFound = matcher.find();
+                if (!matchFound){
+                    mandelbrotYTextField.setText(newValue.toString());
+                }
+            }
         });
         mandelbrotZoom.addListener((observable, oldValue, newValue) -> {
-            mandelbrotZoomTextField.setText(newValue.toString());
+            if (!Objects.equals(oldValue, newValue)) {
+                Pattern pattern = Pattern.compile("[0-9](\\.)?");
+                Matcher matcher = pattern.matcher(newValue.toString());
+                boolean matchFound = matcher.find();
+                if (!matchFound){
+                   mandelbrotZoomTextField.setText(newValue.toString());
+                }
+            }
         });
         juliaX.addListener((observable, oldValue, newValue) -> {
-            juliaXTextField.setText(newValue.toString());
+            if (!Objects.equals(oldValue, newValue)) {
+                Pattern pattern = Pattern.compile("[0-9](\\.)?");
+                Matcher matcher = pattern.matcher(newValue.toString());
+                boolean matchFound = matcher.find();
+                if (!matchFound){
+                    juliaXTextField.setText(newValue.toString());
+                }
+            }
         });
         juliaY.addListener((observable, oldValue, newValue) -> {
-            juliaYTextField.setText(newValue.toString());
+            if (!Objects.equals(oldValue, newValue)) {
+                Pattern pattern = Pattern.compile("[0-9](\\.)?");
+                Matcher matcher = pattern.matcher(newValue.toString());
+                boolean matchFound = matcher.find();
+                if (!matchFound){
+                    juliaYTextField.setText(newValue.toString());
+                }
+            }
         });
         juliaZoom.addListener((observable, oldValue, newValue) -> {
-            juliaZoomTextField.setText(newValue.toString());
+            if (!Objects.equals(oldValue, newValue)) {
+                Pattern pattern = Pattern.compile("[0-9](\\.)?");
+                Matcher matcher = pattern.matcher(newValue.toString());
+                boolean matchFound = matcher.find();
+                if (!matchFound){
+                    juliaZoomTextField.setText(newValue.toString());
+                }
+            }
         });
 
         var connectionsButton = new Button("Connection Editor");
