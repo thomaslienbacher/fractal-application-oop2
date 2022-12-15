@@ -227,6 +227,7 @@ public class FractalApplication extends Application {
             mandelbrotY.setValue(mandelbrotY.getValue()-dragY);
 
             restartMandelbrotService();
+            restartJuliaService();
 
             previousMandelbrotX = mouseEvent.getX();
             previousMandelbrotY = mouseEvent.getY();
