@@ -206,27 +206,28 @@ public class FractalApplication extends Application {
         leftCanvas = new Canvas();
         leftCanvas.setCursor(Cursor.HAND);
 
-        // reset drag start position
-        //TODO: dragging all the time
         leftCanvas.setOnMousePressed(mouseEvent -> {
             previousMandelbrotX = mouseEvent.getX();
             previousMandelbrotY = mouseEvent.getY();
         });
-        leftCanvas.setOnMouseReleased(mouseEvent -> {
-            var x = mouseEvent.getX();
-            var y = mouseEvent.getY();
-            var dx = x - previousMandelbrotX;
-            var dy = y - previousMandelbrotY;
+        leftCanvas.setOnMouseDragged(mouseEvent -> {
+            double pixelDeltaX = mouseEvent.getX() - previousMandelbrotX;
+            double pixelDeltaY = mouseEvent.getY() - previousMandelbrotY;
 
-            var transform = new SpaceTransform(leftWidth.intValue(), leftHeight.intValue(), mandelbrotZoom.get(), mandelbrotX.get(), mandelbrotY.get());
+            SpaceTransform transform = new SpaceTransform((int)leftCanvas.getWidth(), (int)leftCanvas.getHeight(), mandelbrotZoom.get(), mandelbrotX.get(), mandelbrotY.get());
 
-            var transX = transform.dragDistanceX(dx);
-            var transY = transform.dragDistanceY(dy);
-            // use minus because we move camera
-            mandelbrotX.setValue(mandelbrotX.getValue() - transX);
-            mandelbrotY.setValue(mandelbrotY.getValue() - transY);
-            FractalLogger.logDragGUI(mandelbrotX.getValue(), mandelbrotY.getValue(), FractalType.MANDELBROT);
+            double dragX = transform.dragDistanceX(pixelDeltaX);
+            double dragY = transform.dragDistanceY(pixelDeltaY);
+
+            mandelbrotX.setValue(mandelbrotX.getValue()-dragX);
+            mandelbrotY.setValue(mandelbrotY.getValue()-dragY);
+
+            restartMandelbrotService();
+
+            previousMandelbrotX = mouseEvent.getX();
+            previousMandelbrotY = mouseEvent.getY();
         });
+
         leftCanvas.setOnScroll(event -> {
             //TODO: fix scroll calculations
             mandelbrotZoom.setValue(mandelbrotZoom.getValue() + (event.getDeltaY() * 0.02));
@@ -240,28 +241,28 @@ public class FractalApplication extends Application {
         rightCanvas = new Canvas();
         rightCanvas.setCursor(Cursor.HAND);
 
-        //TODO: dragging all the time
         rightCanvas.setOnMousePressed(mouseEvent -> {
             previousJuliaX = mouseEvent.getX();
             previousJuliaY = mouseEvent.getY();
         });
+        rightCanvas.setOnMouseDragged(mouseEvent -> {
+            double pixelDeltaX = mouseEvent.getX() - previousJuliaX;
+            double pixelDeltaY = mouseEvent.getY() - previousJuliaY;
 
-        rightCanvas.setOnMouseReleased(mouseEvent -> {
-            var x = mouseEvent.getX();
-            var y = mouseEvent.getY();
-            var dx = x - previousJuliaX;
-            var dy = y - previousJuliaY;
+            SpaceTransform transform = new SpaceTransform((int)rightCanvas.getWidth(), (int)rightCanvas.getHeight(), juliaZoom.get(), juliaX.get(), juliaY.get());
 
-            var transform = new SpaceTransform(rightWidth.intValue(), rightHeight.intValue(), juliaZoom.get(), juliaX.get(), juliaY.get());
+            double dragX = transform.dragDistanceX(pixelDeltaX);
+            double dragY = transform.dragDistanceY(pixelDeltaY);
 
-            var transX = transform.dragDistanceX(dx);
-            var transY = transform.dragDistanceY(dy);
+            juliaX.setValue(juliaX.getValue()-dragX);
+            juliaY.setValue(juliaY.getValue()-dragY);
 
-            // use minus because we move camera
-            juliaX.setValue(juliaX.getValue() - transX);
-            juliaY.setValue(juliaY.getValue() - transY);
-            FractalLogger.logDragGUI(juliaX.getValue(), juliaY.getValue(), FractalType.JULIA);
-        });
+            restartJuliaService();
+
+            previousJuliaX = mouseEvent.getX();
+            previousJuliaY = mouseEvent.getY();
+                });
+
         rightCanvas.setOnScroll(event -> {
             //TODO: fix scroll calculations
             // zoom += delta * 0.02
