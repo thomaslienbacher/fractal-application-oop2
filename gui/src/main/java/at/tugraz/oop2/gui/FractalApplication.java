@@ -125,6 +125,7 @@ public class FractalApplication extends Application {
         mandelbrotRenderService.setOnSucceeded(e -> mandelbrotRenderFinished(mandelbrotRenderService.getValue()));
         mandelbrotRenderService.start();
     }
+
     private void restartJuliaService() {
         //Log call for julia
         FractalRenderOptions renderOptions = new JuliaRenderOptions(juliaX.get(), juliaY.get(), (int) rightCanvas.getWidth(), (int) rightCanvas.getHeight(), juliaZoom.get(), power.get(), iterations.get(), mandelbrotX.getValue(), mandelbrotY.getValue(), colourMode.getValue(), renderMode.getValue());
@@ -144,6 +145,7 @@ public class FractalApplication extends Application {
         juliaRenderService.setOnSucceeded(e -> juliaRenderFinished(juliaRenderService.getValue()));
         juliaRenderService.start();
     }
+
     public void mandelbrotRenderFinished(SimpleImage image) {
         if (image != null) {
             FractalLogger.logRenderFinishedGUI(FractalType.MANDELBROT, image);
@@ -228,7 +230,6 @@ public class FractalApplication extends Application {
             FractalLogger.logDragGUI(mandelbrotX.getValue(), mandelbrotY.getValue(), FractalType.MANDELBROT);
         });
         leftCanvas.setOnScroll(event -> {
-            //TODO: fix scroll calculations
             mandelbrotZoom.setValue(mandelbrotZoom.getValue() + (event.getDeltaY() * 0.02));
             FractalLogger.logZoomGUI(mandelbrotZoom.getValue(), FractalType.MANDELBROT);
             restartMandelbrotService();
@@ -246,7 +247,7 @@ public class FractalApplication extends Application {
             previousJuliaY = mouseEvent.getY();
         });
 
-        rightCanvas.setOnMouseReleased(mouseEvent -> {
+        rightCanvas.setOnMouseDragged(mouseEvent -> {
             var x = mouseEvent.getX();
             var y = mouseEvent.getY();
             var dx = x - previousJuliaX;
@@ -263,9 +264,7 @@ public class FractalApplication extends Application {
             FractalLogger.logDragGUI(juliaX.getValue(), juliaY.getValue(), FractalType.JULIA);
         });
         rightCanvas.setOnScroll(event -> {
-            //TODO: fix scroll calculations
-            // zoom += delta * 0.02
-            System.out.println(event.getDeltaX()  + " " + event.getDeltaY());
+            System.out.println(event.getDeltaX() + " " + event.getDeltaY());
             juliaZoom.setValue(juliaZoom.getValue() + (event.getDeltaY() * 0.02));
             FractalLogger.logZoomGUI(juliaZoom.getValue(), FractalType.JULIA);
             restartJuliaService();
@@ -593,22 +592,34 @@ public class FractalApplication extends Application {
 
 
         mandelbrotX.addListener((observable, oldValue, newValue) -> {
-            mandelbrotXTextField.setText(newValue.toString());
+            if (!Objects.equals(oldValue, newValue)) {
+                mandelbrotXTextField.setText(newValue.toString());
+            }
         });
         mandelbrotY.addListener((observable, oldValue, newValue) -> {
-            mandelbrotYTextField.setText(newValue.toString());
+            if (!Objects.equals(oldValue, newValue)) {
+                mandelbrotYTextField.setText(newValue.toString());
+            }
         });
         mandelbrotZoom.addListener((observable, oldValue, newValue) -> {
-            mandelbrotZoomTextField.setText(newValue.toString());
+            if (!Objects.equals(oldValue, newValue)) {
+                mandelbrotZoomTextField.setText(newValue.toString());
+            }
         });
         juliaX.addListener((observable, oldValue, newValue) -> {
-            juliaXTextField.setText(newValue.toString());
+            if (!Objects.equals(oldValue, newValue)) {
+                juliaXTextField.setText(newValue.toString());
+            }
         });
         juliaY.addListener((observable, oldValue, newValue) -> {
-            juliaYTextField.setText(newValue.toString());
+            if (!Objects.equals(oldValue, newValue)) {
+                juliaYTextField.setText(newValue.toString());
+            }
         });
         juliaZoom.addListener((observable, oldValue, newValue) -> {
-            juliaZoomTextField.setText(newValue.toString());
+            if (!Objects.equals(oldValue, newValue)) {
+                juliaZoomTextField.setText(newValue.toString());
+            }
         });
 
         var connectionsButton = new Button("Connection Editor");
