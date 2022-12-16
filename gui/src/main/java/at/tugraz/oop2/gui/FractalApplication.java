@@ -374,7 +374,7 @@ public class FractalApplication extends Application {
         TextField mandelbrotXTextField = new TextField(Double.toString(mandelbrotX.get()));
         mandelbrotXTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             try {
-                Pattern pattern = Pattern.compile("-?[0-9](\\.)?");
+                Pattern pattern = Pattern.compile("-?[0-9]*(\\.)");
                 Matcher matcher = pattern.matcher(newValue.toString());
                 boolean matchFound = matcher.matches();
                 if (!matchFound) {
@@ -391,7 +391,7 @@ public class FractalApplication extends Application {
         TextField mandelbrotYTextField = new TextField(Double.toString(mandelbrotY.get()));
         mandelbrotYTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             try {
-                Pattern pattern = Pattern.compile("-?[0-9](\\.)?");
+                Pattern pattern = Pattern.compile("-?[0-9]*(\\.)");
                 Matcher matcher = pattern.matcher(newValue.toString());
                 boolean matchFound = matcher.matches();
                 if (!matchFound) {
@@ -408,7 +408,7 @@ public class FractalApplication extends Application {
         TextField mandelbrotZoomTextField = new TextField(Double.toString(mandelbrotZoom.get()));
         mandelbrotZoomTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             try {
-                Pattern pattern = Pattern.compile("-?[0-9](\\.)?");
+                Pattern pattern = Pattern.compile("-?[0-9]*(\\.)");
                 Matcher matcher = pattern.matcher(newValue.toString());
                 boolean matchFound = matcher.matches();
                 if (!matchFound) {
@@ -424,7 +424,7 @@ public class FractalApplication extends Application {
         TextField juliaXTextField = new TextField(Double.toString(juliaX.get()));
         juliaXTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             try {
-                Pattern pattern = Pattern.compile("-?[0-9](\\.)?");
+                Pattern pattern = Pattern.compile("-?[0-9]*(\\.)");
                 Matcher matcher = pattern.matcher(newValue.toString());
                 boolean matchFound = matcher.matches();
                 if (!matchFound) {
@@ -440,7 +440,7 @@ public class FractalApplication extends Application {
         TextField juliaYTextField = new TextField(Double.toString(juliaY.get()));
         juliaYTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             try {
-                Pattern pattern = Pattern.compile("-?[0-9](\\.)?");
+                Pattern pattern = Pattern.compile("-?[0-9]*(\\.)");
                 Matcher matcher = pattern.matcher(newValue.toString());
                 boolean matchFound = matcher.matches();
                 if (!matchFound) {
@@ -456,7 +456,7 @@ public class FractalApplication extends Application {
         TextField juliaZoomTextField = new TextField(Double.toString(juliaZoom.get()));
         juliaZoomTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             try {
-                Pattern pattern = Pattern.compile("-?[0-9](\\.)?");
+                Pattern pattern = Pattern.compile("-?[0-9]*(\\.)");
                 Matcher matcher = pattern.matcher(newValue.toString());
                 boolean matchFound = matcher.matches();
                 if (!matchFound) {
@@ -618,32 +618,62 @@ public class FractalApplication extends Application {
 
         mandelbrotX.addListener((observable, oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
-                mandelbrotXTextField.setText(newValue.toString());
+                Pattern pattern = Pattern.compile("-?[0-9]*(\\.)0*");
+                Matcher matcher = pattern.matcher(newValue.toString());
+                boolean matchFound = matcher.matches();
+                if (!matchFound){
+                    mandelbrotXTextField.setText(newValue.toString());
+                }
             }
         });
         mandelbrotY.addListener((observable, oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
-                mandelbrotYTextField.setText(newValue.toString());
+                Pattern pattern = Pattern.compile("-?[0-9]*(\\.)0*");
+                Matcher matcher = pattern.matcher(newValue.toString());
+                boolean matchFound = matcher.matches();
+                if (!matchFound){
+                    mandelbrotYTextField.setText(newValue.toString());
+                }
             }
         });
         mandelbrotZoom.addListener((observable, oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
-                mandelbrotZoomTextField.setText(newValue.toString());
+                Pattern pattern = Pattern.compile("-?[0-9]*(\\.)0*");
+                Matcher matcher = pattern.matcher(newValue.toString());
+                boolean matchFound = matcher.matches();
+                if (!matchFound){
+                    mandelbrotZoomTextField.setText(newValue.toString());
+                }
             }
         });
         juliaX.addListener((observable, oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
-                juliaXTextField.setText(newValue.toString());
+                Pattern pattern = Pattern.compile("-?[0-9]*(\\.)0*");
+                Matcher matcher = pattern.matcher(newValue.toString());
+                boolean matchFound = matcher.matches();
+                if (!matchFound){
+                    juliaXTextField.setText(newValue.toString());
+                }
             }
         });
         juliaY.addListener((observable, oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
-                juliaYTextField.setText(newValue.toString());
+                Pattern pattern = Pattern.compile("-?[0-9]*(\\.)0*");
+                Matcher matcher = pattern.matcher(newValue.toString());
+                boolean matchFound = matcher.matches();
+                if (!matchFound){
+                    juliaYTextField.setText(newValue.toString());
+                }
             }
         });
         juliaZoom.addListener((observable, oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
-                juliaZoomTextField.setText(newValue.toString());
+                Pattern pattern = Pattern.compile("-?[0-9]*(\\.)0*");
+                Matcher matcher = pattern.matcher(newValue.toString());
+                boolean matchFound = matcher.matches();
+                if (!matchFound){
+                    juliaZoomTextField.setText(newValue.toString());
+                }
             }
         });
 
