@@ -218,13 +218,13 @@ public class FractalApplication extends Application {
             double pixelDeltaX = mouseEvent.getX() - previousMandelbrotX;
             double pixelDeltaY = mouseEvent.getY() - previousMandelbrotY;
 
-            SpaceTransform transform = new SpaceTransform((int)leftCanvas.getWidth(), (int)leftCanvas.getHeight(), mandelbrotZoom.get(), mandelbrotX.get(), mandelbrotY.get());
+            SpaceTransform transform = new SpaceTransform((int) leftCanvas.getWidth(), (int) leftCanvas.getHeight(), mandelbrotZoom.get(), mandelbrotX.get(), mandelbrotY.get());
 
             double dragX = transform.dragDistanceX(pixelDeltaX);
             double dragY = transform.dragDistanceY(pixelDeltaY);
 
-            mandelbrotX.setValue(mandelbrotX.getValue()-dragX);
-            mandelbrotY.setValue(mandelbrotY.getValue()-dragY);
+            mandelbrotX.setValue(mandelbrotX.getValue() - dragX);
+            mandelbrotY.setValue(mandelbrotY.getValue() - dragY);
 
             restartMandelbrotService();
             restartJuliaService();
@@ -253,19 +253,19 @@ public class FractalApplication extends Application {
             double pixelDeltaX = mouseEvent.getX() - previousJuliaX;
             double pixelDeltaY = mouseEvent.getY() - previousJuliaY;
 
-            SpaceTransform transform = new SpaceTransform((int)rightCanvas.getWidth(), (int)rightCanvas.getHeight(), juliaZoom.get(), juliaX.get(), juliaY.get());
+            SpaceTransform transform = new SpaceTransform((int) rightCanvas.getWidth(), (int) rightCanvas.getHeight(), juliaZoom.get(), juliaX.get(), juliaY.get());
 
             double dragX = transform.dragDistanceX(pixelDeltaX);
             double dragY = transform.dragDistanceY(pixelDeltaY);
 
-            juliaX.setValue(juliaX.getValue()-dragX);
-            juliaY.setValue(juliaY.getValue()-dragY);
+            juliaX.setValue(juliaX.getValue() - dragX);
+            juliaY.setValue(juliaY.getValue() - dragY);
 
             restartJuliaService();
 
             previousJuliaX = mouseEvent.getX();
             previousJuliaY = mouseEvent.getY();
-                });
+        });
 
         rightCanvas.setOnScroll(event -> {
             System.out.println(event.getDeltaX() + " " + event.getDeltaY());
@@ -374,10 +374,15 @@ public class FractalApplication extends Application {
         TextField mandelbrotXTextField = new TextField(Double.toString(mandelbrotX.get()));
         mandelbrotXTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             try {
-                if (!Objects.equals(newValue, oldValue)) {
-                    mandelbrotX.set(Double.parseDouble(newValue));
-                    restartMandelbrotService();
-                    restartJuliaService();
+                Pattern pattern = Pattern.compile("-?[0-9](\\.)");
+                Matcher matcher = pattern.matcher(newValue.toString());
+                boolean matchFound = matcher.matches();
+                if (!matchFound) {
+                    if (!Objects.equals(newValue, oldValue)) {
+                        mandelbrotX.set(Double.parseDouble(newValue));
+                        restartMandelbrotService();
+                        restartJuliaService();
+                    }
                 }
             } catch (NumberFormatException ignored) {
             }
@@ -386,10 +391,15 @@ public class FractalApplication extends Application {
         TextField mandelbrotYTextField = new TextField(Double.toString(mandelbrotY.get()));
         mandelbrotYTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             try {
-                if (!Objects.equals(newValue, oldValue)) {
-                    mandelbrotY.set(Double.parseDouble(newValue));
-                    restartMandelbrotService();
-                    restartJuliaService();
+                Pattern pattern = Pattern.compile("-?[0-9](\\.)");
+                Matcher matcher = pattern.matcher(newValue.toString());
+                boolean matchFound = matcher.matches();
+                if (!matchFound) {
+                    if (!Objects.equals(newValue, oldValue)) {
+                        mandelbrotY.set(Double.parseDouble(newValue));
+                        restartMandelbrotService();
+                        restartJuliaService();
+                    }
                 }
             } catch (NumberFormatException ignored) {
             }
@@ -398,9 +408,14 @@ public class FractalApplication extends Application {
         TextField mandelbrotZoomTextField = new TextField(Double.toString(mandelbrotZoom.get()));
         mandelbrotZoomTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             try {
-                if (!Objects.equals(newValue, oldValue)) {
-                    mandelbrotZoom.set(Double.parseDouble(newValue));
-                    restartMandelbrotService();
+                Pattern pattern = Pattern.compile("-?[0-9](\\.)");
+                Matcher matcher = pattern.matcher(newValue.toString());
+                boolean matchFound = matcher.matches();
+                if (!matchFound) {
+                    if (!Objects.equals(newValue, oldValue)) {
+                        mandelbrotZoom.set(Double.parseDouble(newValue));
+                        restartMandelbrotService();
+                    }
                 }
             } catch (NumberFormatException ignored) {
             }
@@ -409,9 +424,14 @@ public class FractalApplication extends Application {
         TextField juliaXTextField = new TextField(Double.toString(juliaX.get()));
         juliaXTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             try {
-                if (!Objects.equals(newValue, oldValue)) {
-                    juliaX.set(Double.parseDouble(newValue));
-                    restartJuliaService();
+                Pattern pattern = Pattern.compile("-?[0-9](\\.)");
+                Matcher matcher = pattern.matcher(newValue.toString());
+                boolean matchFound = matcher.matches();
+                if (!matchFound) {
+                    if (!Objects.equals(newValue, oldValue)) {
+                        juliaX.set(Double.parseDouble(newValue));
+                        restartJuliaService();
+                    }
                 }
             } catch (NumberFormatException ignored) {
             }
@@ -420,9 +440,14 @@ public class FractalApplication extends Application {
         TextField juliaYTextField = new TextField(Double.toString(juliaY.get()));
         juliaYTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             try {
-                if (!Objects.equals(newValue, oldValue)) {
-                    juliaY.set(Double.parseDouble(newValue));
-                    restartJuliaService();
+                Pattern pattern = Pattern.compile("-?[0-9](\\.)");
+                Matcher matcher = pattern.matcher(newValue.toString());
+                boolean matchFound = matcher.matches();
+                if (!matchFound) {
+                    if (!Objects.equals(newValue, oldValue)) {
+                        juliaY.set(Double.parseDouble(newValue));
+                        restartJuliaService();
+                    }
                 }
             } catch (NumberFormatException ignored) {
             }
@@ -431,9 +456,14 @@ public class FractalApplication extends Application {
         TextField juliaZoomTextField = new TextField(Double.toString(juliaZoom.get()));
         juliaZoomTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             try {
-                if (!Objects.equals(newValue, oldValue)) {
-                    juliaZoom.set(Double.parseDouble(newValue));
-                    restartJuliaService();
+                Pattern pattern = Pattern.compile("-?[0-9](\\.)");
+                Matcher matcher = pattern.matcher(newValue.toString());
+                boolean matchFound = matcher.matches();
+                if (!matchFound) {
+                    if (!Objects.equals(newValue, oldValue)) {
+                        juliaZoom.set(Double.parseDouble(newValue));
+                        restartJuliaService();
+                    }
                 }
             } catch (NumberFormatException ignored) {
             }
@@ -588,62 +618,32 @@ public class FractalApplication extends Application {
 
         mandelbrotX.addListener((observable, oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
-                Pattern pattern = Pattern.compile("-?[0-9](\\.)?");
-                Matcher matcher = pattern.matcher(newValue.toString());
-                boolean matchFound = matcher.matches();
-                if (!matchFound){
-                    mandelbrotXTextField.setText(newValue.toString());
-                }
+                mandelbrotXTextField.setText(newValue.toString());
             }
         });
         mandelbrotY.addListener((observable, oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
-                Pattern pattern = Pattern.compile("-?[0-9](\\.)?");
-                Matcher matcher = pattern.matcher(newValue.toString());
-                boolean matchFound = matcher.matches();
-                if (!matchFound){
-                    mandelbrotYTextField.setText(newValue.toString());
-                }
+                mandelbrotYTextField.setText(newValue.toString());
             }
         });
         mandelbrotZoom.addListener((observable, oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
-                Pattern pattern = Pattern.compile("-?[0-9](\\.)?");
-                Matcher matcher = pattern.matcher(newValue.toString());
-                boolean matchFound = matcher.matches();
-                if (!matchFound){
-                   mandelbrotZoomTextField.setText(newValue.toString());
-                }
+                mandelbrotZoomTextField.setText(newValue.toString());
             }
         });
         juliaX.addListener((observable, oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
-                Pattern pattern = Pattern.compile("-?[0-9](\\.)?");
-                Matcher matcher = pattern.matcher(newValue.toString());
-                boolean matchFound = matcher.matches();
-                if (!matchFound){
-                    juliaXTextField.setText(newValue.toString());
-                }
+                juliaXTextField.setText(newValue.toString());
             }
         });
         juliaY.addListener((observable, oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
-                Pattern pattern = Pattern.compile("-?[0-9](\\.)?");
-                Matcher matcher = pattern.matcher(newValue.toString());
-                boolean matchFound = matcher.matches();
-                if (!matchFound){
-                    juliaYTextField.setText(newValue.toString());
-                }
+                juliaYTextField.setText(newValue.toString());
             }
         });
         juliaZoom.addListener((observable, oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
-                Pattern pattern = Pattern.compile("-?[0-9](\\.)?");
-                Matcher matcher = pattern.matcher(newValue.toString());
-                boolean matchFound = matcher.matches();
-                if (!matchFound){
-                    juliaZoomTextField.setText(newValue.toString());
-                }
+                juliaZoomTextField.setText(newValue.toString());
             }
         });
 
