@@ -588,9 +588,9 @@ public class FractalApplication extends Application {
 
         mandelbrotX.addListener((observable, oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
-                Pattern pattern = Pattern.compile("[0-9](\\.)?");
+                Pattern pattern = Pattern.compile("-?[0-9](\\.)?");
                 Matcher matcher = pattern.matcher(newValue.toString());
-                boolean matchFound = matcher.find();
+                boolean matchFound = matcher.matches();
                 if (!matchFound){
                     mandelbrotXTextField.setText(newValue.toString());
                 }
@@ -598,9 +598,9 @@ public class FractalApplication extends Application {
         });
         mandelbrotY.addListener((observable, oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
-                Pattern pattern = Pattern.compile("[0-9](\\.)?");
+                Pattern pattern = Pattern.compile("-?[0-9](\\.)?");
                 Matcher matcher = pattern.matcher(newValue.toString());
-                boolean matchFound = matcher.find();
+                boolean matchFound = matcher.matches();
                 if (!matchFound){
                     mandelbrotYTextField.setText(newValue.toString());
                 }
@@ -608,9 +608,9 @@ public class FractalApplication extends Application {
         });
         mandelbrotZoom.addListener((observable, oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
-                Pattern pattern = Pattern.compile("[0-9](\\.)?");
+                Pattern pattern = Pattern.compile("-?[0-9](\\.)?");
                 Matcher matcher = pattern.matcher(newValue.toString());
-                boolean matchFound = matcher.find();
+                boolean matchFound = matcher.matches();
                 if (!matchFound){
                    mandelbrotZoomTextField.setText(newValue.toString());
                 }
@@ -618,9 +618,9 @@ public class FractalApplication extends Application {
         });
         juliaX.addListener((observable, oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
-                Pattern pattern = Pattern.compile("[0-9](\\.)?");
+                Pattern pattern = Pattern.compile("-?[0-9](\\.)?");
                 Matcher matcher = pattern.matcher(newValue.toString());
-                boolean matchFound = matcher.find();
+                boolean matchFound = matcher.matches();
                 if (!matchFound){
                     juliaXTextField.setText(newValue.toString());
                 }
@@ -628,9 +628,9 @@ public class FractalApplication extends Application {
         });
         juliaY.addListener((observable, oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
-                Pattern pattern = Pattern.compile("[0-9](\\.)?");
+                Pattern pattern = Pattern.compile("-?[0-9](\\.)?");
                 Matcher matcher = pattern.matcher(newValue.toString());
-                boolean matchFound = matcher.find();
+                boolean matchFound = matcher.matches();
                 if (!matchFound){
                     juliaYTextField.setText(newValue.toString());
                 }
@@ -638,9 +638,9 @@ public class FractalApplication extends Application {
         });
         juliaZoom.addListener((observable, oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
-                Pattern pattern = Pattern.compile("[0-9](\\.)?");
+                Pattern pattern = Pattern.compile("-?[0-9](\\.)?");
                 Matcher matcher = pattern.matcher(newValue.toString());
-                boolean matchFound = matcher.find();
+                boolean matchFound = matcher.matches();
                 if (!matchFound){
                     juliaZoomTextField.setText(newValue.toString());
                 }
