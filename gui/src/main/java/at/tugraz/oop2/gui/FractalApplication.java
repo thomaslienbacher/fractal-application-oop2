@@ -1,16 +1,15 @@
 package at.tugraz.oop2.gui;
 
 import at.tugraz.oop2.shared.*;
+import at.tugraz.oop2.shared.networking.PacketPing;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.*;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
-import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
@@ -18,12 +17,13 @@ import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
-import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javafx.util.Duration;
 
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -36,60 +36,40 @@ import java.util.regex.Pattern;
 
 public class FractalApplication extends Application {
 
-    private GridPane mainPane;
-    private Canvas rightCanvas;
-    private Canvas leftCanvas;
-    private GridPane controlPane;
 
-    private DoubleProperty renderTimeMandelbrot = new SimpleDoubleProperty(0);
-
-    private DoubleProperty renderTimeJulia = new SimpleDoubleProperty(0);
-
-    private IntegerProperty iterations = new SimpleIntegerProperty(128);
-
-    private DoubleProperty power = new SimpleDoubleProperty(2.0);
-
-    private DoubleProperty mandelbrotX = new SimpleDoubleProperty(0.0);
-
-    private DoubleProperty mandelbrotY = new SimpleDoubleProperty(0.0);
-
-    private DoubleProperty mandelbrotZoom = new SimpleDoubleProperty(0.0);
-
-    private DoubleProperty juliaX = new SimpleDoubleProperty(0.0);
-
-    private DoubleProperty juliaY = new SimpleDoubleProperty(0.0);
-
-    private DoubleProperty juliaZoom = new SimpleDoubleProperty(0.0);
-
-    private Property<ColourModes> colourMode = new SimpleObjectProperty<>(ColourModes.BLACK_WHITE);
-
-    private Property<RenderMode> renderMode = new SimpleObjectProperty<>(RenderMode.LOCAL);
-
-    private IntegerProperty tasksPerWorker = new SimpleIntegerProperty(5);
-
-    private Property<List<InetSocketAddress>> connections = new SimpleObjectProperty<>(new ArrayList<>(10));
-
-    private ListView<InetSocketAddress> connectionsListView = new ListView<>();
-
-
-    private DoubleProperty leftHeight = new SimpleDoubleProperty();
-
-    private DoubleProperty leftWidth = new SimpleDoubleProperty();
-
-    private DoubleProperty rightHeight = new SimpleDoubleProperty();
-
-    private DoubleProperty rightWidth = new SimpleDoubleProperty();
-
-    private boolean windowClosed = false;
     double previousMandelbrotX = 0;
     double previousMandelbrotY = 0;
     double previousJuliaX = 0;
     double previousJuliaY = 0;
-
     Service<SimpleImage> mandelbrotRenderService, juliaRenderService;
-
     long renderStartMandelbrot = 0;
     long renderStartJulia = 0;
+    private DoubleProperty renderTimeMandelbrot = new SimpleDoubleProperty(0);
+    private DoubleProperty renderTimeJulia = new SimpleDoubleProperty(0);
+    private GridPane mainPane;
+    private Canvas rightCanvas;
+    private Canvas leftCanvas;
+    private GridPane controlPane;
+    private IntegerProperty iterations = new SimpleIntegerProperty(128);
+    private DoubleProperty power = new SimpleDoubleProperty(2.0);
+    private DoubleProperty mandelbrotX = new SimpleDoubleProperty(0.0);
+    private DoubleProperty mandelbrotY = new SimpleDoubleProperty(0.0);
+    private DoubleProperty mandelbrotZoom = new SimpleDoubleProperty(0.0);
+    private DoubleProperty juliaX = new SimpleDoubleProperty(0.0);
+    private DoubleProperty juliaY = new SimpleDoubleProperty(0.0);
+    private DoubleProperty juliaZoom = new SimpleDoubleProperty(0.0);
+    private Property<ColourModes> colourMode = new SimpleObjectProperty<>(ColourModes.BLACK_WHITE);
+    private Property<RenderMode> renderMode = new SimpleObjectProperty<>(RenderMode.LOCAL);
+    private IntegerProperty tasksPerWorker = new SimpleIntegerProperty(5);
+    private Property<List<InetSocketAddress>> workerAdresses = new SimpleObjectProperty<>(new ArrayList<>(10));
+    private Label connectedWorkersLabel;
+    private ArrayList<Socket> workerSockets = new ArrayList<>();
+    private ScheduledService<Object> syncWorkersService;
+    private DoubleProperty leftHeight = new SimpleDoubleProperty();
+    private DoubleProperty leftWidth = new SimpleDoubleProperty();
+    private DoubleProperty rightHeight = new SimpleDoubleProperty();
+    private DoubleProperty rightWidth = new SimpleDoubleProperty();
+    private boolean windowClosed = false;
 
     private void updateSizes() {
         if (windowClosed) {
@@ -116,14 +96,13 @@ public class FractalApplication extends Application {
 
     private void restartMandelbrotService() {
         //Log call for mandelbrot
-        // TODO: remove fragment number and fragment index, locally they are ignored
-        FractalRenderOptions renderOptions = new MandelbrotRenderOptions(mandelbrotX.get(), mandelbrotY.get(), (int) leftCanvas.getWidth(), (int) leftCanvas.getHeight(), mandelbrotZoom.get(), power.get(), iterations.get(), colourMode.getValue(), 0, 1, renderMode.getValue());
+        FractalRenderOptions renderOptions = new MandelbrotRenderOptions(mandelbrotX.get(), mandelbrotY.get(), (int) leftCanvas.getWidth(), (int) leftCanvas.getHeight(), mandelbrotZoom.get(), power.get(), iterations.get(), colourMode.getValue(), renderMode.getValue());
         FractalLogger.logRenderCallGUI(renderOptions);
 
         if (mandelbrotRenderService != null) {
             mandelbrotRenderService.cancel();
         }
-        MandelbrotRenderer mandelbrotRenderer = new MandelbrotRenderer(power.get(), iterations.get(), mandelbrotX.get(), mandelbrotY.get(), mandelbrotZoom.get(), colourMode.getValue(), renderMode.getValue(), tasksPerWorker.get(), connections.getValue(), leftCanvas);
+        MandelbrotRenderer mandelbrotRenderer = new MandelbrotRenderer(power.get(), iterations.get(), mandelbrotX.get(), mandelbrotY.get(), mandelbrotZoom.get(), colourMode.getValue(), renderMode.getValue(), tasksPerWorker.get(), workerAdresses.getValue(), leftCanvas);
         mandelbrotRenderer.setBounds((int) leftCanvas.getWidth(), (int) leftCanvas.getHeight());
         mandelbrotRenderService = new Service<>() {
             @Override
@@ -144,7 +123,7 @@ public class FractalApplication extends Application {
         if (juliaRenderService != null) {
             juliaRenderService.cancel();
         }
-        JuliaRenderer juliaRenderer = new JuliaRenderer(power.get(), iterations.get(), juliaX.get(), juliaY.get(), juliaZoom.get(), mandelbrotX.get(), mandelbrotY.get(), colourMode.getValue(), renderMode.getValue(), tasksPerWorker.get(), connections.getValue(), rightCanvas);
+        JuliaRenderer juliaRenderer = new JuliaRenderer(power.get(), iterations.get(), juliaX.get(), juliaY.get(), juliaZoom.get(), mandelbrotX.get(), mandelbrotY.get(), colourMode.getValue(), renderMode.getValue(), tasksPerWorker.get(), workerAdresses.getValue(), rightCanvas);
         juliaRenderer.setBounds((int) rightCanvas.getWidth(), (int) rightCanvas.getHeight());
         juliaRenderService = new Service<>() {
             @Override
@@ -213,11 +192,11 @@ public class FractalApplication extends Application {
 
         parseArguments();
 
-        if (connections.getValue().isEmpty()) {
+        if (workerAdresses.getValue().isEmpty()) {
             InetSocketAddress newConnection = new InetSocketAddress("localhost", 8010);
-            var currentConnections = connections.getValue();
+            var currentConnections = workerAdresses.getValue();
             currentConnections.add(newConnection);
-            connections.setValue(currentConnections);
+            workerAdresses.setValue(currentConnections);
         }
 
         leftCanvas = new Canvas();
@@ -333,13 +312,25 @@ public class FractalApplication extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
 
+        syncWorkersService = new ScheduledService<>() {
+            @Override
+            protected Task<Object> createTask() {
+                return new Task<>() {
+                    @Override
+                    protected Object call() {
+                        syncWorkers();
+                        return null;
+                    }
+                };
+            }
+        };
+        syncWorkersService.setPeriod(Duration.millis(400));
+
         Platform.runLater(() -> {
             FractalLogger.logInitializedGUI(mainPane, primaryStage, leftCanvas, rightCanvas);
-
-
             FractalLogger.logArgumentsGUI(mandelbrotX, mandelbrotY, mandelbrotZoom, power, iterations, juliaX, juliaY, juliaZoom, colourMode);
-
             updateSizes();
+            syncWorkersService.start();
         });
 
         primaryStage.setOnCloseRequest(this::onWindowClose);
@@ -720,7 +711,9 @@ public class FractalApplication extends Application {
         controlPane.add(renderModeField, 1, 9);
         controlPane.add(tasksPerWorkerTextField, 1, 10);
         controlPane.add(connectionsButton, 1, 11);
-        controlPane.add(new Label("~~~"), 1, 12);
+
+        connectedWorkersLabel = new Label(getConnectedWorkersString());
+        controlPane.add(connectedWorkersLabel, 1, 12);
         controlPane.add(renderTimeMandelbrotLabel, 1, 13);
         controlPane.add(renderTimeJuliaLabel, 1, 14);
 
@@ -808,9 +801,9 @@ public class FractalApplication extends Application {
                     for (String connection : param.split("=")[1].split(",")) {
                         try {
                             InetSocketAddress newConnection = new InetSocketAddress(connection.split(":")[0], Integer.parseInt(connection.split(":")[1]));
-                            var currentConnections = connections.getValue();
+                            var currentConnections = workerAdresses.getValue();
                             currentConnections.add(newConnection);
-                            connections.setValue(currentConnections);
+                            workerAdresses.setValue(currentConnections);
                         } catch (IllegalArgumentException ignored) {
                         }
                     }
@@ -831,6 +824,14 @@ public class FractalApplication extends Application {
         if (juliaRenderService != null) {
             juliaRenderService.cancel();
         }
+
+        for (var s : workerSockets) {
+            try {
+                s.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void showConnectionsWindow() {
@@ -838,7 +839,7 @@ public class FractalApplication extends Application {
         connectionsWindow.setTitle("Connections");
 
         ListView<InetSocketAddress> connectionsListView = new ListView<>();
-        ObservableList<InetSocketAddress> inetSocketAddressObservableList = FXCollections.observableArrayList(connections.getValue());
+        ObservableList<InetSocketAddress> inetSocketAddressObservableList = FXCollections.observableArrayList(workerAdresses.getValue());
         connectionsListView.setItems(inetSocketAddressObservableList);
 
         Button addButton = new Button("Add");
@@ -851,16 +852,19 @@ public class FractalApplication extends Application {
         changeButton.setOnAction(event -> changeSelectedConnection(connectionsListView));
 
         Button testButton = new Button("Test Connection");
+        //TODO: dont create new socket => check if we are still connected or create connection and add to list
         testButton.setOnAction(event -> {
             InetSocketAddress selectedConnection = connectionsListView.getSelectionModel().getSelectedItem();
             if (selectedConnection != null) {
-                try (Socket socket = new Socket()) {
+                try {
+                    var socket = new Socket();
                     socket.connect(selectedConnection);
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("Connection Test");
                     alert.setHeaderText(null);
                     alert.setContentText("Connection successful!");
                     alert.showAndWait();
+                    workerSockets.add(socket);
                 } catch (IOException e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Connection Test");
@@ -895,10 +899,10 @@ public class FractalApplication extends Application {
                 String[] hostPort = result.get().split(":");
                 String host = hostPort[0];
                 int port = Integer.parseInt(hostPort[1]);
-                List<InetSocketAddress> connectionsList = connections.getValue();
+                List<InetSocketAddress> connectionsList = workerAdresses.getValue();
                 connectionsList.add(new InetSocketAddress(host, port));
-                connections.setValue(connectionsList);
-                connectionsListView.setItems(FXCollections.observableArrayList(connections.getValue()));
+                workerAdresses.setValue(connectionsList);
+                connectionsListView.setItems(FXCollections.observableArrayList(workerAdresses.getValue()));
             } catch (Exception e) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Host:Port Input");
@@ -912,10 +916,10 @@ public class FractalApplication extends Application {
     public void deleteSelectedConnection(ListView<InetSocketAddress> connectionsListView) {
         InetSocketAddress selectedConnection = connectionsListView.getSelectionModel().getSelectedItem();
         if (selectedConnection != null) {
-            List<InetSocketAddress> connectionsList = connections.getValue();
+            List<InetSocketAddress> connectionsList = workerAdresses.getValue();
             connectionsList.remove(selectedConnection);
-            connections.setValue(connectionsList);
-            connectionsListView.setItems(FXCollections.observableArrayList(connections.getValue()));
+            workerAdresses.setValue(connectionsList);
+            connectionsListView.setItems(FXCollections.observableArrayList(workerAdresses.getValue()));
         }
     }
 
@@ -934,12 +938,12 @@ public class FractalApplication extends Application {
                     String host = hostPort[0];
                     int port = Integer.parseInt(hostPort[1]);
 
-                    List<InetSocketAddress> connectionsList = connections.getValue();
+                    List<InetSocketAddress> connectionsList = workerAdresses.getValue();
                     connectionsList.remove(selectedConnection);
 
                     connectionsList.add(new InetSocketAddress(host, port));
-                    connections.setValue(connectionsList);
-                    connectionsListView.setItems(FXCollections.observableArrayList(connections.getValue()));
+                    workerAdresses.setValue(connectionsList);
+                    connectionsListView.setItems(FXCollections.observableArrayList(workerAdresses.getValue()));
                 } catch (Exception e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Host:Port Input");
@@ -949,5 +953,65 @@ public class FractalApplication extends Application {
                 }
             }
         }
+    }
+
+    private String getConnectedWorkersString() {
+        if (workerSockets.isEmpty()) {
+            return "~";
+        }
+
+        var sb = new StringBuilder();
+
+        for (int i = 0; i < workerSockets.size(); i++) {
+            var cw = workerSockets.get(i);
+            sb.append(String.format("[%02d]: ", i + 1));
+            sb.append(cw.getRemoteSocketAddress());
+            sb.append("\n");
+        }
+
+        return sb.toString();
+    }
+
+    private void syncWorkers() {
+        // try to connect sockets that are in connection list
+        for (var addr : workerAdresses.getValue()) {
+            boolean inList = workerSockets.stream()
+                    .map((a) -> a.getRemoteSocketAddress().equals(addr))
+                    .reduce(false, (left, right) -> left || right);
+
+            if (!inList) {
+                try {
+                    var socket = new Socket();
+                    socket.connect(addr);
+                    workerSockets.add(socket);
+                } catch (IOException e) {
+                }
+            }
+        }
+
+        var updatedSockets = new ArrayList<>(workerSockets);
+
+        // remove closed sockets and try to send ping
+        for (var s : workerSockets) {
+            if (s.isClosed()) {
+                updatedSockets.remove(s);
+                continue;
+            }
+
+            try {
+                System.out.println("Sending PING to " + s.getRemoteSocketAddress());
+                var out = new ObjectOutputStream(s.getOutputStream());
+                var p = new PacketPing();
+                out.writeObject(p);
+                out.flush();
+            } catch (IOException e) {
+                updatedSockets.remove(s);
+            }
+        }
+
+        workerSockets = updatedSockets;
+        Platform.runLater(() -> {
+            connectedWorkersLabel.setText(getConnectedWorkersString());
+        });
     }
 }
