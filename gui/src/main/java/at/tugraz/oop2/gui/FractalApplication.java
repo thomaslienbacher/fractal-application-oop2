@@ -852,26 +852,24 @@ public class FractalApplication extends Application {
         changeButton.setOnAction(event -> changeSelectedConnection(connectionsListView));
 
         Button testButton = new Button("Test Connection");
-        //TODO: dont create new socket => check if we are still connected or create connection and add to list
         testButton.setOnAction(event -> {
             InetSocketAddress selectedConnection = connectionsListView.getSelectionModel().getSelectedItem();
             if (selectedConnection != null) {
-                try {
-                    var socket = new Socket();
-                    socket.connect(selectedConnection);
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                var alreadyConnected = workerSockets.stream().filter((a) -> a.getRemoteSocketAddress().equals(selectedConnection)).findAny();
+
+                Alert alert;
+                if (alreadyConnected.isPresent()) {
+                    alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("Connection Test");
                     alert.setHeaderText(null);
                     alert.setContentText("Connection successful!");
-                    alert.showAndWait();
-                    workerSockets.add(socket);
-                } catch (IOException e) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                } else {
+                    alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Connection Test");
                     alert.setHeaderText(null);
                     alert.setContentText("Connection failed!");
-                    alert.showAndWait();
                 }
+                alert.showAndWait();
             }
         });
 
@@ -918,6 +916,13 @@ public class FractalApplication extends Application {
         if (selectedConnection != null) {
             List<InetSocketAddress> connectionsList = workerAdresses.getValue();
             connectionsList.remove(selectedConnection);
+            var alreadyConnected = workerSockets.stream().filter((a) -> a.getRemoteSocketAddress().equals(selectedConnection)).findAny();
+            if (alreadyConnected.isPresent()) {
+                try {
+                    alreadyConnected.get().close();
+                } catch (IOException ignored) {
+                }
+            }
             workerAdresses.setValue(connectionsList);
             connectionsListView.setItems(FXCollections.observableArrayList(workerAdresses.getValue()));
         }
@@ -984,7 +989,8 @@ public class FractalApplication extends Application {
                     var socket = new Socket();
                     socket.connect(addr);
                     workerSockets.add(socket);
-                } catch (IOException e) {
+                    FractalLogger.logConnectionOpenedGUI(addr.getHostString(), addr.getPort());
+                } catch (IOException ignored) {
                 }
             }
         }
@@ -995,6 +1001,7 @@ public class FractalApplication extends Application {
         for (var s : workerSockets) {
             if (s.isClosed()) {
                 updatedSockets.remove(s);
+                FractalLogger.logConnectionLostGUI(s.getInetAddress().getHostAddress(), s.getPort());
                 continue;
             }
 
@@ -1006,6 +1013,7 @@ public class FractalApplication extends Application {
                 out.flush();
             } catch (IOException e) {
                 updatedSockets.remove(s);
+                FractalLogger.logConnectionLostGUI(s.getInetAddress().getHostAddress(), s.getPort());
             }
         }
 

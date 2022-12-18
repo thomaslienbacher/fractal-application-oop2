@@ -10,7 +10,6 @@ public class ServerLogger {
         if (loggerSingleton == null) {
             var id = String.format("WORKER-%04X", Server.WORKER_ID);
             loggerSingleton = Logger.getLogger(id);
-            BasicConfigurator.configure();
         }
         return loggerSingleton;
     }

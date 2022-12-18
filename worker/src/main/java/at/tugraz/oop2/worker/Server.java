@@ -1,11 +1,11 @@
 package at.tugraz.oop2.worker;
 
+import at.tugraz.oop2.shared.FractalLogger;
 import at.tugraz.oop2.shared.networking.PacketPing;
 
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.ServerSocket;
-import java.time.LocalDateTime;
-import java.util.Date;
 
 public class Server {
 
@@ -24,24 +24,30 @@ public class Server {
             var serverSocket = new ServerSocket(port);
             ServerLogger.log("Starting server on port", port);
             serverSocket.setSoTimeout(0); // lets never timeout
+            FractalLogger.logStartWorker(port);
 
             while (true) {
-                var socket = serverSocket.accept();
-                ServerLogger.log("New client bound to", socket.getRemoteSocketAddress().toString());
+                try {
+                    var socket = serverSocket.accept();
+                    ServerLogger.log("New client bound to", socket.getRemoteSocketAddress().toString());
+                    FractalLogger.logConnectionOpenedWorker();
 
-                while (!socket.isClosed()) {
-                    // read data
-                    var in = new ObjectInputStream(socket.getInputStream());
-                    Object raw = in.readObject();
-                    ServerLogger.log("Received", raw.getClass().getName());
+                    while (!socket.isClosed()) {
+                        // read data
+                        var in = new ObjectInputStream(socket.getInputStream());
+                        Object raw = in.readObject();
+                        ServerLogger.log("Received", raw.getClass().getName());
 
-                    if (raw instanceof PacketPing p) {
-                        ServerLogger.log("Ping at", p.time, "from", System.currentTimeMillis() - p.time, "ms ago");
+                        if (raw instanceof PacketPing p) {
+                            ServerLogger.log("Ping at", p.time, "from", System.currentTimeMillis() - p.time, "ms ago");
+                        }
                     }
-
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
 
                 ServerLogger.log("Client disconnected!");
+                FractalLogger.logConnectionLostWorker();
             }
         } catch (Exception e) {
             ServerLogger.err("Server stopped due to exception", e.getMessage());
