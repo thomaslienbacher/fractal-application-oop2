@@ -4,7 +4,7 @@
 
 * Lienbacher Thomas
 * Marehart Tobias
-* Phillip Zeba
+* Zeba Phillip
 
 ## GUI
 
