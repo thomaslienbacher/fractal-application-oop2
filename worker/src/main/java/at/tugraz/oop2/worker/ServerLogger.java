@@ -1,6 +1,5 @@
 package at.tugraz.oop2.worker;
 
-import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 public class ServerLogger {
