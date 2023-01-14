@@ -1,3 +1,13 @@
+# Fractal application
+This project contains the code for the OOP2 KU assignment.
+It was developed by 
+
+* [Thomas Lienbacher](https://github.com/thomaslienbacher)
+* [Marehart Tobias](https://github.com/TobiasMarehart)
+* [Zeba Phillip](https://github.com/quophil)
+
+and is licensed as free software under GNU GPL v3.
+
 # Objektorientierte Programmierung 2 KU Assignment 2022
 
 # Overview
